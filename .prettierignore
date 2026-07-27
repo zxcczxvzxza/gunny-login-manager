@@ -1,0 +1,8 @@
+node_modules
+.vite
+dist
+out
+plans
+src/resources
+package-lock.json
+*.min.js

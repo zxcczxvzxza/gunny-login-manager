@@ -1,0 +1,59 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('electronAPI', {
+  // Window controls
+  minimize: () => ipcRenderer.invoke('window:minimize'),
+  maximize: () => ipcRenderer.invoke('window:maximize'),
+  close: () => ipcRenderer.invoke('window:close'),
+  openLogWindow: () => ipcRenderer.invoke('window:open-log'),
+
+  // Settings
+  getSettings: () => ipcRenderer.invoke('settings:get'),
+  saveSettings: (partial) => ipcRenderer.invoke('settings:save', partial),
+
+  // Accounts CRUD
+  getAccounts: () => ipcRenderer.invoke('accounts:list'),
+  createAccount: (data) => ipcRenderer.invoke('accounts:create', data),
+  updateAccount: (id, data) => ipcRenderer.invoke('accounts:update', id, data),
+  deleteAccount: (id) => ipcRenderer.invoke('accounts:delete', id),
+
+  // Templates
+  getTemplates: () => ipcRenderer.invoke('templates:list'),
+  createTemplate: (data) => ipcRenderer.invoke('templates:create', data),
+  updateTemplate: (id, data) => ipcRenderer.invoke('templates:update', id, data),
+  deleteTemplate: (id) => ipcRenderer.invoke('templates:delete', id),
+
+  // Game
+  loginGame: (username, password, serverId, accountType, prefix, maxLength, checkReg) => ipcRenderer.invoke('game:login', username, password, serverId, accountType, prefix, maxLength, checkReg),
+  renameWindow: (pid, newName) => ipcRenderer.invoke('game:rename-window', pid, newName),
+  arrangeLaunchers: () => ipcRenderer.invoke('game:arrange-launchers'),
+  arrangeLaunchers100: (pids) => ipcRenderer.invoke('game:arrange-launchers-100', pids),
+  registerCharacter: (username, password, serverId, prefix, maxLength) => ipcRenderer.invoke('game:register-character', username, password, serverId, prefix, maxLength),
+
+  // Auto
+  // get token api -- getLoginToken api service
+  getTokenApi: (username, password) => ipcRenderer.invoke('auto:get-token-api', username, password),
+  setupFirstRun: () => ipcRenderer.invoke('auto:setup-first-run'),
+  openBatFile: () => ipcRenderer.invoke('auto:open-bat-file'),
+  getAllCode: () => ipcRenderer.invoke('auto:get-all-code'),
+  stopGetAllCode: () => ipcRenderer.invoke('auto:stop-all-code'),
+  openWeeklyCodeTxt: () => ipcRenderer.invoke('auto:open-weekly-code-txt'),
+  getWeeklyCode: (codes) => ipcRenderer.invoke('auto:get-weekly-code', codes),
+  stopGetWeeklyCode: () => ipcRenderer.invoke('auto:stop-weekly-code'),
+  
+  // Reset Mark
+  resetMark: (accounts) => ipcRenderer.invoke('game:reset-mark', accounts),
+  stopResetMark: () => ipcRenderer.invoke('game:stop-reset-mark'),
+
+  onAutoProgress: (callback) => ipcRenderer.on('auto:progress', (_event, data) => callback(data)),
+  onAppLog: (callback) => ipcRenderer.on('app:log', (_event, msg) => callback(msg)),
+
+  // Webshop
+  openWebshop: (token) => ipcRenderer.invoke('open-webshop', token),
+
+  // Auto Update
+  onUpdateAvailable: (callback) => ipcRenderer.on('update:available', (_event, info) => callback(info)),
+  onUpdateProgress: (callback) => ipcRenderer.on('update:progress', (_event, progressObj) => callback(progressObj)),
+  onUpdateDownloaded: (callback) => ipcRenderer.on('update:downloaded', (_event, info) => callback(info)),
+  installUpdate: () => ipcRenderer.invoke('update:install'),
+});

@@ -1,0 +1,25 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Build & publish installer
+        run: npm run dist
+        env:
+          # electron-updater publishes the NSIS installer + latest.yml to this repo's Releases.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

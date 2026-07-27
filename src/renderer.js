@@ -1,0 +1,972 @@
+// ═══════════════════════════════════════════════════════════════
+// QLTK — TienTool  |  Renderer Process
+// ═══════════════════════════════════════════════════════════════
+import { createIcons, icons } from 'lucide';
+
+const api = window.electronAPI;
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+// ── State ──────────────────────────────────────────────────────
+let accounts = [];
+let templates = [];
+let selectedIndex = -1;
+let serverList = [];
+
+// ── DOM refs ───────────────────────────────────────────────────
+const $ = (sel) => document.querySelector(sel);
+
+const dom = {
+  pageDashboard: $('#page-dashboard'),
+  accountCount: $('#account-count'),
+  inputSearchAccount: $('#search-account'),
+  accountsTbody: $('#accounts-tbody'),
+  formId: $('#form-id'),
+  formUsername: $('#form-username'),
+  formPassword: $('#form-password'),
+  formServer: $('#form-server'),
+  formNote: $('#form-note'),
+  formAccountType: $('#form-accountType'),
+  copyPass: $('#copy-pass'),
+  btnAdd: $('#btn-add'),
+  btnEdit: $('#btn-edit'),
+  btnAddClone: $('#btn-add-clone'),
+  btnDelete: $('#btn-delete'),
+  
+  // Templates
+  templateSelect: $('#template-select'),
+  btnCreateTemplate: $('#btn-create-template'),
+  btnRenameTemplate: $('#btn-rename-template'),
+  btnDeleteTemplate: $('#btn-delete-template'),
+
+  btnLoginLauncher: $('#btn-login-launcher'),
+  btnScriptAuto: $('#btn-script-auto'),
+  btnSetupFirstRun: $('#btn-setup-first-run'),
+  toastContainer: $('#toast-container'),
+  btnNhanAllCode: $('#btn-nhan-all-code'),
+  btnCodeTuan: $('#btn-code-tuan'),
+  btnResetAn: $('#btn-reset-an'),
+  btnOpenWebshop: $('#btn-open-webshop'),
+  autoProgressContainer: $('#auto-progress-container'),
+  autoProgressAcc: $('#auto-progress-acc'),
+  autoProgressCode: $('#auto-progress-code'),
+  autoProgressBar: $('#auto-progress-bar'),
+  autoProgressMsg: $('#auto-progress-msg'),
+
+  btnArrangeLauncher: $('#btn-arrange-launcher'),
+  btnArrangeLauncher100: $('#btn-arrange-launcher-100'),
+
+  btnConfig: $('#btn-config'),
+  modalConfig: $('#modal-config'),
+  btnCloseConfig: $('#btn-close-config'),
+  btnSaveConfig: $('#btn-save-config'),
+  inputRegPrefix: $('#input-reg-prefix'),
+  inputRegCheckEnable: $('#input-reg-check-enable'),
+  inputGunnyPath: $('#input-gunny-path'),
+  inputApiNinja: $('#input-api-ninja'),
+  inputMaxLength: $('#input-max-length'),
+  inputArrangeCols: $('#input-arrange-cols'),
+  inputArrangeGapX: $('#input-arrange-gapx'),
+  inputArrangeGapY: $('#input-arrange-gapy'),
+
+  btnLog: $('#btn-log'),
+
+  btnMinimize: $('#btn-minimize'),
+  btnMaximize: $('#btn-maximize'),
+  btnClose: $('#btn-close'),
+
+  // Custom Prompt
+  modalPrompt: $('#modal-prompt'),
+  promptTitle: $('#prompt-title'),
+  inputPrompt: $('#input-prompt'),
+  btnClosePrompt: $('#btn-close-prompt'),
+  btnCancelPrompt: $('#btn-cancel-prompt'),
+  btnSubmitPrompt: $('#btn-submit-prompt'),
+};
+
+// ── Settings (runtime config from main process) ────────────────
+// Minimal fallback until settings are fetched from main on startup.
+let settings = {
+  regPrefix: 'GNLM',
+  regCheckEnable: true,
+  defaultMaxLength: 14,
+  gunnyBrowserPath: '',
+  apiNinjaKey: '',
+  windowArrange: { cols: 2, gapX: 15, gapY: 15, startX: 30, startY: 30 },
+};
+
+async function loadSettings() {
+  // One-time migration: old localStorage `tt_config` -> settings.json (main-side).
+  try {
+    const legacy = localStorage.getItem('tt_config');
+    if (legacy) {
+      const parsed = JSON.parse(legacy);
+      const patch = {};
+      if (parsed.regPrefix !== undefined) patch.regPrefix = parsed.regPrefix;
+      if (parsed.regCheckEnable !== undefined) patch.regCheckEnable = parsed.regCheckEnable;
+      await api.saveSettings(patch);
+      localStorage.removeItem('tt_config');
+    }
+  } catch (e) {
+    console.error('Migrate tt_config failed:', e);
+  }
+
+  const res = await api.getSettings();
+  if (res?.success) settings = res.data;
+}
+
+// ── Init Lucide Icons ──────────────────────────────────────────
+function refreshIcons() {
+  createIcons({ icons });
+}
+refreshIcons();
+
+// ── Page management ────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach((p) => {
+    p.classList.add('hidden');
+    p.style.display = 'none';
+  });
+  const target = $(`#page-${name}`);
+  target.classList.remove('hidden');
+  target.style.display = 'flex';
+}
+
+// ── Window Controls ────────────────────────────────────────────
+dom.btnMinimize.addEventListener('click', () => api.minimize());
+dom.btnMaximize.addEventListener('click', () => api.maximize());
+dom.btnClose.addEventListener('click', () => api.close());
+
+// ── Toast ──────────────────────────────────────────────────────
+function toast(message, type = 'info') {
+  const colors = {
+    success: 'bg-gradient-to-r from-emerald-500 to-teal-500',
+    error: 'bg-gradient-to-r from-red-500 to-rose-400',
+    info: 'bg-gradient-to-r from-brand-400 to-blue-500',
+  };
+  const el = document.createElement('div');
+  el.className = `px-4 py-2.5 rounded-lg text-sm font-medium text-white shadow-lg max-w-[300px] toast-anim ${colors[type] || colors.info}`;
+  el.textContent = message;
+  dom.toastContainer.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ── Copy Password ────────────────────────────────────────────
+dom.copyPass.addEventListener('click', async () => {
+  const input = dom.formPassword;
+  const password = input.value;
+
+  if (!password) return;
+
+  try {
+    await navigator.clipboard.writeText(password);
+
+    // optional: đổi icon / feedback
+    const iconEl = dom.copyPass.querySelector('i, svg');
+    if (iconEl) {
+      iconEl.setAttribute('data-lucide', 'check'); // icon check khi copy thành công
+      refreshIcons();
+
+      // đổi lại icon sau 1.5s
+      setTimeout(() => {
+        iconEl.setAttribute('data-lucide', 'copy');
+        refreshIcons();
+      }, 1500);
+    }
+
+    toast('Copy mật khẩu thành công', 'success')
+
+  } catch (err) {
+    toast('Copy mật khẩu thất bại', 'error')
+    console.error('Copy failed:', err);
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+//  FETCH SERVER LIST
+// ══════════════════════════════════════════════════════════════
+async function loadServers() {
+  try {
+    const res = await fetch(`${BASE_URL}/GetAllServer`);
+    const data = await res.json();
+    console.log(data);
+    if (data.result && data.ListServer) {
+      serverList = data.ListServer;
+      populateServerDropdown();
+    }
+  } catch (err) {
+    console.error('[Renderer] Failed to fetch servers:', err);
+    populateServerDropdown();
+  }
+}
+
+function populateServerDropdown() {
+  const sel = dom.formServer;
+  sel.innerHTML = '<option value="">-- Chọn server --</option>';
+  serverList.forEach((s) => {
+    const opt = document.createElement('option');
+    opt.value = s.serverId;
+    opt.textContent = `${s.serverId}. ${s.Name}`;
+    if (s.Offline) {
+      opt.textContent += ' (Offline)';
+      opt.disabled = true;
+    }
+    if (s.New) {
+      opt.textContent += ' ✦';
+    }
+    sel.appendChild(opt);
+  });
+}
+
+// Get server display name from id
+export function getServerName(serverId) {
+  const s = serverList.find((x) => String(x.serverId) === String(serverId));
+  return s ? s.Name : String(serverId);
+}
+
+// Load servers on startup
+loadServers();
+
+// ══════════════════════════════════════════════════════════════
+//  STARTUP — no login; go straight to the dashboard
+// ══════════════════════════════════════════════════════════════
+showPage('dashboard');
+loadSettings();
+loadAccounts();
+
+// ══════════════════════════════════════════════════════════════
+//  ACCOUNTS
+// ══════════════════════════════════════════════════════════════
+async function loadAccounts() {
+  dom.accountCount.textContent = 'Đang tải...';
+  try {
+    const result = await api.getAccounts();
+    if (result.success) {
+      accounts = result.data;
+      selectedIndex = -1;
+      clearForm();
+      renderAccounts();
+      loadTemplates();
+    } else {
+      toast(result.error, 'error');
+    }
+  } catch {
+    toast('Không thể tải dữ liệu.', 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  TEMPLATES
+// ══════════════════════════════════════════════════════════════
+async function loadTemplates() {
+  try {
+    const result = await api.getTemplates();
+    if (result.success) {
+      templates = result.data;
+      renderTemplates();
+    } else {
+      console.error('Failed to load templates:', result.error);
+    }
+  } catch (err) {
+    console.error('Failed to load templates:', err);
+  }
+}
+
+function renderTemplates() {
+  dom.templateSelect.innerHTML = '<option value="">-- Chọn template --</option>';
+  templates.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t._id;
+    opt.textContent = `${t.name} (${t.accountIds.length} acc)`;
+    dom.templateSelect.appendChild(opt);
+  });
+  dom.btnDeleteTemplate.classList.add('hidden');
+  dom.btnRenameTemplate.classList.add('hidden');
+  dom.btnCreateTemplate.classList.remove('hidden');
+}
+
+// ── Custom Prompt ───────────────────────────────────────────────
+// ── Custom Prompt ───────────────────────────────────────────────
+function asyncPrompt(title, defaultValue = '') {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('modal-prompt');
+    const titleEl = document.getElementById('prompt-title');
+    const inputEl = document.getElementById('input-prompt');
+    const btnClose = document.getElementById('btn-close-prompt');
+    const btnCancel = document.getElementById('btn-cancel-prompt');
+    const btnSubmit = document.getElementById('btn-submit-prompt');
+
+    if (!modal) {
+      console.error('Modal prompt element not found!');
+      return resolve(prompt(title, defaultValue)); // fallback
+    }
+
+    titleEl.textContent = title;
+    inputEl.value = defaultValue;
+    modal.classList.remove('hidden');
+    inputEl.focus();
+    inputEl.select();
+
+    const cleanup = () => {
+      modal.classList.add('hidden');
+      btnClose.removeEventListener('click', onCancel);
+      btnCancel.removeEventListener('click', onCancel);
+      btnSubmit.removeEventListener('click', onSubmit);
+      inputEl.removeEventListener('keydown', onKeydown);
+    };
+
+    const onCancel = () => { cleanup(); resolve(null); };
+    const onSubmit = () => { cleanup(); resolve(inputEl.value); };
+    const onKeydown = (e) => {
+      if (e.key === 'Enter') onSubmit();
+      if (e.key === 'Escape') onCancel();
+    };
+
+    btnClose.addEventListener('click', onCancel);
+    btnCancel.addEventListener('click', onCancel);
+    btnSubmit.addEventListener('click', onSubmit);
+    inputEl.addEventListener('keydown', onKeydown);
+  });
+}
+
+dom.templateSelect.addEventListener('change', () => {
+  const selectedId = dom.templateSelect.value;
+  if (!selectedId) {
+    dom.btnDeleteTemplate.classList.add('hidden');
+    dom.btnRenameTemplate.classList.add('hidden');
+    dom.btnCreateTemplate.classList.remove('hidden');
+    accounts.forEach(a => a.isChecked = false);
+    renderAccounts();
+    return;
+  }
+
+  dom.btnDeleteTemplate.classList.remove('hidden');
+  dom.btnRenameTemplate.classList.remove('hidden');
+  dom.btnCreateTemplate.classList.add('hidden');
+  const t = templates.find(x => x._id === selectedId);
+  if (t) {
+    accounts.forEach(a => {
+      a.isChecked = t.accountIds.includes(a._id);
+    });
+    renderAccounts();
+  }
+});
+
+dom.btnCreateTemplate.addEventListener('click', async () => {
+  const checkedAccounts = accounts.filter(acc => acc.isChecked);
+
+  if (checkedAccounts.length === 0) {
+    return toast('Vui lòng tick chọn ít nhất 1 account để tạo template.', 'warning');
+  }
+
+  const name = await asyncPrompt(`Nhập tên template (${checkedAccounts.length} acc):`);
+  
+  if (!name || !name.trim()) return;
+
+  const data = {
+    name: name.trim(),
+    accountIds: checkedAccounts.map(a => a._id)
+  };
+
+  const result = await api.createTemplate(data);
+  if (result.success) {
+    toast(`Tạo template "${data.name}" thành công!`, 'success');
+    accounts.forEach(a => a.isChecked = false);
+    renderAccounts();
+    loadTemplates();
+  } else {
+    toast(result.error, 'error');
+  }
+});
+
+dom.btnDeleteTemplate.addEventListener('click', async () => {
+  const selectedId = dom.templateSelect.value;
+  if (!selectedId) return;
+
+  if (!confirm('Bạn có chắc muốn xóa template này?')) return;
+
+  const result = await api.deleteTemplate(selectedId);
+  if (result.success) {
+    toast('Đã xóa template.', 'success');
+    loadTemplates();
+  } else {
+    toast(result.error, 'error');
+  }
+});
+
+dom.btnRenameTemplate.addEventListener('click', async () => {
+  const selectedId = dom.templateSelect.value;
+  if (!selectedId) return;
+
+  const t = templates.find(x => x._id === selectedId);
+  if (!t) return;
+
+  const newName = await asyncPrompt(`Nhập tên mới cho template:`, t.name);
+  if (!newName || !newName.trim() || newName.trim() === t.name) return;
+
+  const result = await api.updateTemplate(selectedId, { name: newName.trim() });
+  if (result.success) {
+    toast('Đã đổi tên template.', 'success');
+    loadTemplates();
+  } else {
+    toast(result.error, 'error');
+  }
+});
+
+function renderAccounts() {
+  const query = dom.inputSearchAccount?.value.trim().toLowerCase() || '';
+  const filteredAccounts = accounts.filter(acc => acc.username.toLowerCase().includes(query));
+
+  dom.accountCount.textContent = `Danh sách (${filteredAccounts.length})`;
+
+  if (filteredAccounts.length === 0) {
+    dom.accountsTbody.innerHTML = `<tr><td colspan="5" class="text-center py-10 text-gray-500 text-sm">Chưa có tài khoản nào.</td></tr>`;
+    return;
+  }
+
+  dom.accountsTbody.innerHTML = filteredAccounts
+    .map(
+      (acc, idx) => {
+        const i = accounts.indexOf(acc);
+        return `
+    <tr data-index="${i}" class="cursor-pointer transition-colors hover:bg-brand-400/10 ${i === selectedIndex ? 'selected' : ''} ${idx % 2 === 0 ? '' : 'bg-white/[0.02]'}">
+      <td class="px-2 py-1 border-b border-white/[0.03] text-center w-6" onclick="event.stopPropagation()">
+        <input
+          type="checkbox"
+          class="acc-chk cursor-pointer
+                w-4 h-4
+                rounded-md
+                border border-white/30
+                bg-white/5
+                text-brand-500
+                checked:bg-brand-500
+                checked:border-brand-500
+                focus:ring-2
+                focus:ring-brand-400/40
+                focus:ring-offset-0
+                transition-all duration-200"
+          data-index="${i}"
+          ${acc.isChecked ? 'checked' : ''}
+        />
+      </td>
+      <td class="px-2 py-1 border-b border-white/[0.03] text-xs truncate" title="${esc(acc.username)}">${esc(acc.username)}</td>
+      <td class="px-2 py-1 border-b border-white/[0.03] text-xs">${acc.server}</td>
+      <td class="px-2 py-1 border-b border-white/[0.03] text-xs truncate text-gray-400" title="${esc(acc.note || '')}">${esc(acc.note || '')}</td>
+      <td class="px-2 py-1 border-b border-white/[0.03] text-xs text-gray-400">${acc.accountType}</td>
+    </tr>`;
+      }
+    )
+    .join('');
+}
+
+// ── Table click → select row ───────────────────────────────────
+if (dom.inputSearchAccount) {
+  dom.inputSearchAccount.addEventListener('input', () => {
+    renderAccounts();
+  });
+}
+
+dom.accountsTbody.addEventListener('click', (e) => {
+  const tr = e.target.closest('tr[data-index]');
+  if (!tr) return;
+  selectAccount(parseInt(tr.dataset.index, 10));
+});
+
+dom.accountsTbody.addEventListener('change', (e) => {
+  if (e.target.classList.contains('acc-chk')) {
+    const idx = parseInt(e.target.dataset.index, 10);
+    accounts[idx].isChecked = e.target.checked;
+  }
+});
+
+function selectAccount(idx) {
+  selectedIndex = idx;
+  const acc = accounts[idx];
+  if (!acc) return;
+  dom.formId.value = acc._id;
+  dom.formUsername.value = acc.username;
+  dom.formPassword.value = acc.password;
+  dom.formServer.value = acc.server;
+  dom.formNote.value = acc.note || '';
+  dom.formAccountType.value = acc.accountType;
+  renderAccounts();
+}
+
+function clearForm() {
+  dom.formId.value = '';
+  dom.formUsername.value = '';
+  dom.formPassword.value = '';
+  dom.formServer.value = '';
+  dom.formNote.value = '';
+  dom.formAccountType.value = '0';
+}
+
+function getFormData() {
+  return {
+    username: dom.formUsername.value.trim(),
+    password: dom.formPassword.value.trim(),
+    server: dom.formServer.value,
+    accountType: dom.formAccountType.value,
+    note: dom.formNote.value.trim(),
+  };
+}
+
+// ── CRUD ───────────────────────────────────────────────────────
+dom.btnAdd.addEventListener('click', async () => {
+  const data = getFormData();
+  if (!data.username || !data.password) return toast('Nhập tài khoản và mật khẩu.', 'error');
+  data.accountType = '1';
+  const result = await api.createAccount(data);
+  result.success ? (toast('Đã thêm acc chính.', 'success'), loadAccounts()) : toast(result.error, 'error');
+});
+
+dom.btnAddClone.addEventListener('click', async () => {
+  const data = getFormData();
+  if (!data.username || !data.password) return toast('Nhập tài khoản và mật khẩu.', 'error');
+  data.accountType = '0';
+  const result = await api.createAccount(data);
+  result.success ? (toast('Đã thêm acc clone.', 'success'), loadAccounts()) : toast(result.error, 'error');
+});
+
+dom.btnEdit.addEventListener('click', async () => {
+  const id = dom.formId.value;
+  if (!id) return toast('Chọn tài khoản để sửa.', 'error');
+  const result = await api.updateAccount(id, getFormData());
+  result.success ? (toast('Đã cập nhật.', 'success'), loadAccounts()) : toast(result.error, 'error');
+});
+
+dom.btnDelete.addEventListener('click', async () => {
+  const id = dom.formId.value;
+  if (!id) return toast('Chọn tài khoản để xóa.', 'error');
+  if (!confirm('Xóa tài khoản này?')) return;
+  const result = await api.deleteAccount(id);
+  result.success ? (toast('Đã xóa.', 'success'), loadAccounts()) : toast(result.error, 'error');
+});
+
+// ── Login Launcher ─────────────────────────────────────────────
+dom.btnLoginLauncher.addEventListener('click', async () => {
+  const checkedAccounts = accounts.filter(acc => acc.isChecked);
+
+  if (checkedAccounts.length > 0) {
+    toast(`Đang login ${checkedAccounts.length} account...`, 'info');
+    let loggedInPids = [];
+
+    dom.btnLoginLauncher.disabled = true;
+    for (let acc of checkedAccounts) {
+      if (!acc.server) {
+        toast(`Account ${acc.username} chưa có server.`, 'error');
+        continue;
+      }
+      try {
+        const result = await api.loginGame(acc.username, acc.password, acc.server, acc.accountType, settings.regPrefix, settings.defaultMaxLength, settings.regCheckEnable);
+        if (result.success) {
+          const sName = getServerName(acc.server);
+          const hwidSuffix = result.pid ? ` - ${result.pid}` : '';
+          await api.renameWindow(result.pid, `${acc.username} - ${sName}${hwidSuffix}`);
+          loggedInPids.push(result.pid);
+        } else {
+          toast(`Lỗi log ${acc.username}: ${result.msg}`, 'error');
+        }
+      } catch (err) {
+        toast(`Lỗi log ${acc.username}.`, 'error');
+      }
+    }
+    dom.btnLoginLauncher.disabled = false;
+
+    toast(`Đã mở ${loggedInPids.length} game.`, 'success');
+
+    if (loggedInPids.length === 4) {
+      toast('Đang dàn 4 khung 100%...', 'info');
+      await api.arrangeLaunchers100(loggedInPids);
+    }
+
+    // Reset ticks
+    accounts.forEach(a => a.isChecked = false);
+    renderAccounts();
+    return;
+  }
+
+  const data = getFormData();
+  if (!data.username || !data.password || !data.server) {
+    return toast('Vui lòng chọn tài khoản và server hợp lệ.', 'error');
+  }
+
+  toast('Đang mở Launcher...', 'info');
+  try {
+    const result = await api.loginGame(data.username, data.password, data.server, data.accountType || 2, settings.regPrefix, settings.defaultMaxLength, settings.regCheckEnable);
+    if (result.success) {
+      toast('Đã mở Game Launcher.', 'success');
+      const sName = getServerName(data.server);
+      const hwidSuffix = result.pid ? ` - ${result.pid}` : '';
+      await api.renameWindow(result.pid, `${data.username} - ${sName}${hwidSuffix}`);
+    } else {
+      toast(result.msg || 'Không thể đăng nhập game.', 'error');
+    }
+  } catch (err) {
+    toast('Lỗi khi mở Game Launcher.', 'error');
+  }
+});
+
+// ── Arrange Launchers ──────────────────────────────────────────
+dom.btnArrangeLauncher.addEventListener('click', async () => {
+  toast('Đang sắp xếp cửa sổ 50%...', 'info');
+  const result = await api.arrangeLaunchers();
+  if (result.success) {
+    toast('Đã sắp xếp 50% xong.', 'success');
+  } else {
+    toast(result.msg || 'Không thể sắp xếp.', 'error');
+  }
+});
+
+if (dom.btnArrangeLauncher100) {
+  dom.btnArrangeLauncher100.addEventListener('click', async () => {
+    toast('Đang sắp xếp cửa sổ 100% (4 góc)...', 'info');
+    const result = await api.arrangeLaunchers100();
+    if (result.success) {
+      toast('Đã sắp xếp 100% xong.', 'success');
+    } else {
+      toast(result.msg || 'Không thể sắp xếp.', 'error');
+    }
+  });
+}
+
+// ── Config Modal ───────────────────────────────────────────────
+dom.btnConfig.addEventListener('click', () => {
+  const wa = settings.windowArrange || {};
+  dom.inputRegPrefix.value = settings.regPrefix ?? 'GNLM';
+  if (dom.inputRegCheckEnable) dom.inputRegCheckEnable.checked = settings.regCheckEnable !== false;
+  dom.inputGunnyPath.value = settings.gunnyBrowserPath ?? '';
+  dom.inputApiNinja.value = settings.apiNinjaKey ?? '';
+  dom.inputMaxLength.value = settings.defaultMaxLength ?? 14;
+  dom.inputArrangeCols.value = wa.cols ?? 2;
+  dom.inputArrangeGapX.value = wa.gapX ?? 15;
+  dom.inputArrangeGapY.value = wa.gapY ?? 15;
+  dom.modalConfig.classList.remove('hidden');
+});
+
+dom.btnCloseConfig.addEventListener('click', () => {
+  dom.modalConfig.classList.add('hidden');
+});
+
+dom.btnSaveConfig.addEventListener('click', async () => {
+  const patch = {
+    regPrefix: dom.inputRegPrefix.value.trim() || 'GNLM',
+    regCheckEnable: dom.inputRegCheckEnable ? dom.inputRegCheckEnable.checked : true,
+    gunnyBrowserPath: dom.inputGunnyPath.value.trim() || settings.gunnyBrowserPath,
+    apiNinjaKey: dom.inputApiNinja.value.trim(),
+    defaultMaxLength: parseInt(dom.inputMaxLength.value, 10) || 14,
+    windowArrange: {
+      ...settings.windowArrange,
+      cols: parseInt(dom.inputArrangeCols.value, 10) || 2,
+      gapX: parseInt(dom.inputArrangeGapX.value, 10) || 0,
+      gapY: parseInt(dom.inputArrangeGapY.value, 10) || 0,
+    },
+  };
+
+  const res = await api.saveSettings(patch);
+  if (res?.success) {
+    settings = res.data;
+    dom.modalConfig.classList.add('hidden');
+    toast('Đã lưu cấu hình.', 'success');
+  } else {
+    toast(res?.error || 'Không lưu được cấu hình.', 'error');
+  }
+});
+
+// ── Log Window ──────────────────────────────────────────────────
+dom.btnLog.addEventListener('click', async () => {
+  await api.openLogWindow();
+});
+
+// ── Placeholder buttons ────────────────────────────────────────
+
+const placeholderIds = [
+  'btn-flash-login', 'btn-sort', 'btn-kill-all',
+
+  'btn-clipboard', 
+  'btn-import-json', 'btn-export-json', 'btn-export-txt'
+];
+placeholderIds.forEach((id) => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', () => toast('Chức năng sẽ được cập nhật sau.', 'info'));
+});
+
+// ── Keyboard navigation ───────────────────────────────────────
+document.addEventListener('keydown', (e) => {
+  if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA' || document.activeElement?.tagName === 'SELECT') return;
+  if (e.key === 'ArrowDown' && accounts.length > 0) {
+    e.preventDefault();
+    selectAccount(selectedIndex < accounts.length - 1 ? selectedIndex + 1 : 0);
+  }
+  if (e.key === 'ArrowUp' && accounts.length > 0) {
+    e.preventDefault();
+    selectAccount(selectedIndex > 0 ? selectedIndex - 1 : accounts.length - 1);
+  }
+});
+
+// TAB AUTO
+
+let isAutoRunning = false;
+
+// Listen for progress updates from Main
+api.onAutoProgress((data) => {
+  if (data.accCurrent && data.accTotal) {
+    dom.autoProgressAcc.textContent = `Acc: ${data.accCurrent}/${data.accTotal} (${data.username})`;
+    // Update main progress bar based on accounts
+    const accPercent = (data.accCurrent / data.accTotal) * 100;
+    dom.autoProgressBar.style.width = `${accPercent}%`;
+  }
+
+  if (data.codeCurrent && data.codeTotal) {
+    dom.autoProgressCode.textContent = `Code: ${data.codeCurrent}/${data.codeTotal}`;
+  } else {
+    dom.autoProgressCode.textContent = 'Code: --';
+  }
+
+  if (data.message) {
+    dom.autoProgressMsg.textContent = data.message;
+  }
+});
+
+// btn-script-auto
+dom.btnScriptAuto.addEventListener('click', async () => {
+  toast('Đang chạy script auto...', 'info');
+  await api.openBatFile();
+});
+
+// btn-setup-first-run
+dom.btnSetupFirstRun.addEventListener('click', async () => {
+  toast('Đang mở Setup Auto (quyền Admin)...', 'info');
+  const res = await api.setupFirstRun();
+  if (!res.success) {
+    toast(`Lỗi: ${res.error}`, 'error');
+  } else {
+    toast('Đã mở Clickermann bằng quyền Admin.', 'success');
+  }
+});
+
+// btn-nhan-all-code
+dom.btnNhanAllCode.addEventListener('click', async () => {
+  if (isAutoRunning) {
+    // STOP logic
+    const res = await api.stopGetAllCode();
+    if (res.success) {
+      toast('Đã gửi yêu cầu dừng...', 'info');
+    }
+    return;
+  }
+
+  // START logic
+  isAutoRunning = true;
+  dom.btnNhanAllCode.classList.add('bg-red-500', 'hover:bg-red-400');
+  dom.btnNhanAllCode.classList.remove('bg-surface');
+  dom.btnNhanAllCode.innerHTML = '<i data-lucide="square" class="w-3.5 h-3.5"></i> Dừng nhận code';
+  refreshIcons();
+
+  dom.autoProgressContainer.classList.remove('hidden');
+  dom.autoProgressMsg.textContent = 'Đang bắt đầu...';
+  dom.autoProgressBar.style.width = '0%';
+
+  try {
+    await api.getAllCode();
+  } catch (err) {
+    toast('Lỗi khi chạy automation.', 'error');
+  } finally {
+    isAutoRunning = false;
+    dom.btnNhanAllCode.classList.remove('bg-red-500', 'hover:bg-red-400');
+    dom.btnNhanAllCode.classList.add('bg-surface');
+    dom.btnNhanAllCode.innerHTML = '<i data-lucide="gift" class="w-3.5 h-3.5"></i> Nhận all code';
+    refreshIcons();
+    toast('Tiến trình automation đã kết thúc.', 'info');
+    setTimeout(() => {
+      if (!isAutoRunning && !isWeeklyAutoRunning) dom.autoProgressContainer.classList.add('hidden');
+    }, 5000);
+  }
+});
+
+let isWeeklyAutoRunning = false;
+
+dom.btnCodeTuan.addEventListener('click', async () => {
+  if (isWeeklyAutoRunning) {
+    const res = await api.stopGetWeeklyCode();
+    if (res.success) toast('Đã gửi yêu cầu dừng code tuần...', 'info');
+    return;
+  }
+
+  toast('Đang mở file txt, vui lòng điền code -> lưu lại -> ĐÓNG file txt...', 'info');
+  const txtRes = await api.openWeeklyCodeTxt();
+  if (!txtRes.success) {
+    return toast('Không mở được file txt.', 'error');
+  }
+
+  const { codes } = txtRes;
+  if (!codes || codes.length === 0) {
+    return toast('Danh sách code trống, đã hủy!', 'error');
+  }
+
+  isWeeklyAutoRunning = true;
+  dom.btnCodeTuan.classList.add('bg-red-500', 'hover:bg-red-400');
+  dom.btnCodeTuan.classList.remove('bg-surface');
+  dom.btnCodeTuan.innerHTML = '<i data-lucide="square" class="w-3.5 h-3.5"></i> Dừng Code tuần';
+  refreshIcons();
+
+  dom.autoProgressContainer.classList.remove('hidden');
+  dom.autoProgressMsg.textContent = `Đang bắt đầu... (Có ${codes.length} mã code)`;
+  dom.autoProgressBar.style.width = '0%';
+
+  try {
+    await api.getWeeklyCode(codes);
+  } catch (err) {
+    toast('Lỗi khi chạy code tuần.', 'error');
+  } finally {
+    isWeeklyAutoRunning = false;
+    dom.btnCodeTuan.classList.remove('bg-red-500', 'hover:bg-red-400');
+    dom.btnCodeTuan.classList.add('bg-surface');
+    dom.btnCodeTuan.innerHTML = '<i data-lucide="calendar" class="w-3.5 h-3.5"></i> Code tuần';
+    refreshIcons();
+    toast('Tiến trình Code tuần đã kết thúc.', 'info');
+    setTimeout(() => {
+      if (!isAutoRunning && !isWeeklyAutoRunning) dom.autoProgressContainer.classList.add('hidden');
+    }, 5000);
+  }
+});
+
+// ── Reset Ấn ────────────────────────────────────────────────────
+let isResetMarkRunning = false;
+
+dom.btnResetAn.addEventListener('click', async () => {
+  if (isResetMarkRunning) {
+    const res = await api.stopResetMark();
+    if (res.success) toast('Đã gửi yêu cầu dừng reset ấn...', 'info');
+    return;
+  }
+
+  const checkedAccounts = accounts.filter(acc => acc.isChecked);
+  if (checkedAccounts.length === 0) {
+    return toast('Vui lòng chọn ít nhất 1 tài khoản để reset ấn.', 'warning');
+  }
+
+  isResetMarkRunning = true;
+  dom.btnResetAn.classList.add('bg-red-500', 'hover:bg-red-400');
+  dom.btnResetAn.classList.remove('bg-surface');
+  dom.btnResetAn.innerHTML = '<i data-lucide="square" class="w-3.5 h-3.5"></i> Dừng reset ấn';
+  refreshIcons();
+
+  dom.autoProgressContainer.classList.remove('hidden');
+  dom.autoProgressMsg.textContent = 'Đang bắt đầu reset ấn...';
+  dom.autoProgressBar.style.width = '0%';
+  dom.autoProgressAcc.textContent = `Acc: 0/${checkedAccounts.length}`;
+  dom.autoProgressCode.textContent = 'Ấn: --';
+
+  try {
+    const res = await api.resetMark(checkedAccounts);
+    if (!res.success) {
+        toast(`Lỗi: ${res.error}`, 'error');
+    }
+  } catch (err) {
+    toast('Lỗi khi chạy reset ấn.', 'error');
+  } finally {
+    isResetMarkRunning = false;
+    dom.btnResetAn.classList.remove('bg-red-500', 'hover:bg-red-400');
+    dom.btnResetAn.classList.add('bg-surface');
+    dom.btnResetAn.innerHTML = '<i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Reset ấn V15';
+    refreshIcons();
+    toast('Tiến trình reset ấn đã kết thúc.', 'info');
+    setTimeout(() => {
+      if (!isAutoRunning && !isWeeklyAutoRunning && !isResetMarkRunning) {
+        dom.autoProgressContainer.classList.add('hidden');
+      }
+    }, 5000);
+  }
+});
+
+dom.btnOpenWebshop.addEventListener('click', async () => {
+  const data = getFormData();
+
+  if (!data.username || !data.password) {
+    return toast('Chọn tài khoản trước.', 'error');
+  }
+
+  toast('Đang mở webshop...', 'info');
+
+  const login = await api.getTokenApi(data.username, data.password);
+
+  if (!login.token) {
+    return toast('Login thất bại.', 'error');
+  }
+
+  await api.openWebshop(login.token);
+
+  toast('Đã mở webshop.', 'success');
+});
+
+// ── Helpers ────────────────────────────────────────────────────
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// ── Auto Update ────────────────────────────────────────────────
+if (api.onUpdateAvailable) {
+  const modalUpdate = document.getElementById('modal-update');
+  const updateSpeed = document.getElementById('update-speed');
+  const updateEst = document.getElementById('update-est');
+  const updateProgressBar = document.getElementById('update-progress-bar');
+  const updateTransferred = document.getElementById('update-transferred');
+  const updatePercent = document.getElementById('update-percent');
+  const btnInstallUpdate = document.getElementById('btn-install-update');
+
+  api.onUpdateAvailable((info) => {
+    if (modalUpdate) {
+      modalUpdate.classList.remove('hidden');
+    }
+    toast('Đang tải bản cập nhật mới...', 'info');
+  });
+
+  api.onUpdateProgress((progressObj) => {
+    if (!modalUpdate) return;
+    
+    const speedMB = (progressObj.bytesPerSecond / (1024 * 1024)).toFixed(2);
+    const transferredMB = (progressObj.transferred / (1024 * 1024)).toFixed(2);
+    const totalMB = (progressObj.total / (1024 * 1024)).toFixed(2);
+    const percent = Math.floor(progressObj.percent);
+
+    const remainingBytes = progressObj.total - progressObj.transferred;
+    let estTimeStr = 'Đang tính...';
+    if (progressObj.bytesPerSecond > 0) {
+      const estSeconds = Math.floor(remainingBytes / progressObj.bytesPerSecond);
+      if (estSeconds < 60) {
+        estTimeStr = `${estSeconds}s`;
+      } else {
+        estTimeStr = `${Math.floor(estSeconds / 60)}m ${estSeconds % 60}s`;
+      }
+    }
+
+    updateSpeed.textContent = `Tốc độ: ${speedMB} MB/s`;
+    updateEst.textContent = `Ước tính: ${estTimeStr}`;
+    updateProgressBar.style.width = `${percent}%`;
+    updateTransferred.textContent = `${transferredMB} / ${totalMB} MB`;
+    updatePercent.textContent = `${percent}%`;
+  });
+
+  api.onUpdateDownloaded((info) => {
+    if (!modalUpdate) return;
+    
+    updateSpeed.textContent = 'Hoàn tất tải xuống';
+    updateEst.textContent = '';
+    updateProgressBar.style.width = '100%';
+    updateProgressBar.classList.replace('bg-brand-400', 'bg-green-500');
+    updatePercent.textContent = '100%';
+    
+    if (btnInstallUpdate) {
+      btnInstallUpdate.classList.remove('hidden');
+    }
+    toast('Đã tải xong bản cập nhật, sẵn sàng cài đặt.', 'success');
+  });
+
+  if (btnInstallUpdate) {
+    btnInstallUpdate.addEventListener('click', () => {
+      api.installUpdate();
+    });
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "name": "gunny-login-manager",
+  "productName": "Gunny Login Manager",
+  "version": "0.1.0",
+  "description": "Personal desktop manager for Gunny 2017 accounts and in-game automation",
+  "main": ".vite/build/main.js",
+  "build": {
+    "appId": "com.gunnytool.manager",
+    "productName": "Gunny Login Manager",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "zxcczxvzxza",
+        "repo": "gunny-login-manager",
+        "releaseType": "release"
+      }
+    ],
+    "extraResources": [
+      {
+        "from": "src/resources/clickermann",
+        "to": "clickermann"
+      }
+    ],
+    "asar": true,
+    "files": [
+      "dist/**",
+      ".vite/**",
+      "node_modules/**",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false
+    }
+  },
+  "private": true,
+  "scripts": {
+    "start": "npm run build && electron .",
+    "dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electronmon .\"",
+    "build": "vite build -c vite.main.config.mjs && vite build -c vite.preload.config.mjs && vite build -c vite.renderer.config.mjs",
+    "dist": "npm run build && electron-builder --publish=always",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,mjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,html,md}": [
+      "prettier --write"
+    ]
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.3",
+    "@commitlint/config-conventional": "^20.5.3",
+    "@electron/fuses": "^1.8.0",
+    "@eslint/js": "^10.0.1",
+    "autoprefixer": "^10.5.0",
+    "concurrently": "^9.2.1",
+    "electron": "41.2.0",
+    "electron-builder": "^26.8.1",
+    "electronmon": "^2.0.4",
+    "eslint": "^10.8.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.8.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "postcss": "^8.5.9",
+    "prettier": "^3.9.6",
+    "tailwindcss": "^3.4.19",
+    "vite": "^5.4.21",
+    "vitest": "^4.1.10",
+    "wait-on": "^9.0.5"
+  },
+  "dependencies": {
+    "axios": "^1.15.0",
+    "dotenv": "^16.6.1",
+    "electron-log": "^5.4.3",
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-updater": "^6.8.3",
+    "koffi": "^2.16.0",
+    "lucide": "^1.8.0"
+  }
+}
