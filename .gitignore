@@ -97,3 +97,6 @@ out/
 dist/
 
 download.png
+
+# Ad-hoc network capture / screenshots for API investigation (may contain tokens)
+log/
