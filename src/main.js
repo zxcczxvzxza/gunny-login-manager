@@ -3,6 +3,7 @@ import { app, BrowserWindow, ipcMain, screen, session } from 'electron';
 import path from 'node:path';
 import { exec, spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import started from 'electron-squirrel-startup';
 import {
   getAccounts,
@@ -27,6 +28,11 @@ import { loadSettings, getSettings, saveSettings } from './config/settings.js';
 import config from './config.js';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+
+// Ép console về UTF-8 sớm nhất có thể để log tiếng Việt/emoji không bị vỡ trong terminal.
+if (process.platform === 'win32') {
+  koffiService.setConsoleUtf8();
+}
 
 // Configure logging for auto-updater
 autoUpdater.logger = log;
@@ -75,12 +81,16 @@ const createWindow = () => {
   const windowHeight = 600;
   const margin = 5; // khoảng cách với mép màn hình
 
+  // Icon app (gunnyclient). Chỉ set khi tồn tại — bản đóng gói dùng icon của exe.
+  const appIcon = path.join(__dirname, '../../assets/icon.png');
+
   mainWindow = new BrowserWindow({
     width: windowWidth,
     height: windowHeight,
     frame: false,
     titleBarStyle: 'hidden',
     backgroundColor: '#0a0a1a',
+    ...(existsSync(appIcon) ? { icon: appIcon } : {}),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -164,7 +174,7 @@ ipcMain.handle('window:open-log', () => {
   logWindow = new BrowserWindow({
     width: 650,
     height: 450,
-    title: 'TienTool - Logs',
+    title: 'Gunny Login Manager - Logs',
     frame: false,
     backgroundColor: '#0d1117',
     webPreferences: {

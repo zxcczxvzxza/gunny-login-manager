@@ -1,193 +1,275 @@
 <!doctype html>
 <html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gunny Login Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/index.css" />
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gunny Login Manager</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
-    rel="stylesheet" />
-  <link rel="stylesheet" href="/src/index.css" />
-</head>
-
-<body>
-  <!-- ═══ TITLEBAR ═══ -->
-  <div
-    class="drag-region flex items-center justify-between h-[34px] bg-surface-dark border-b border-white/[0.06] shrink-0 z-50">
-    <div class="flex items-center gap-2 pl-3">
-      <span class="text-sm">🎮</span>
-      <span class="text-xs font-semibold text-gray-400 tracking-wide">Gunny Login Manager</span>
+  <body>
+    <!-- ═══ TITLEBAR ═══ -->
+    <div
+      class="drag-region flex items-center justify-between h-[34px] bg-surface-dark border-b border-white/[0.06] shrink-0 z-50"
+    >
+      <div class="flex items-center gap-2 pl-3">
+        <span class="text-sm">🎮</span>
+        <span class="text-xs font-semibold text-gray-400 tracking-wide">Gunny Login Manager</span>
+      </div>
+      <div class="no-drag flex">
+        <button
+          id="btn-minimize"
+          class="w-11 h-[34px] flex items-center justify-center text-gray-400 hover:bg-white/[0.08] hover:text-white transition-colors"
+          title="Thu nhỏ"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12">
+            <rect y="5" width="12" height="2" fill="currentColor" />
+          </svg>
+        </button>
+        <button
+          id="btn-maximize"
+          class="w-11 h-[34px] flex items-center justify-center text-gray-400 hover:bg-white/[0.08] hover:text-white transition-colors"
+          title="Phóng to"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12">
+            <rect
+              x="1"
+              y="1"
+              width="10"
+              height="10"
+              stroke="currentColor"
+              stroke-width="1.5"
+              fill="none"
+            />
+          </svg>
+        </button>
+        <button
+          id="btn-close"
+          class="w-11 h-[34px] flex items-center justify-center text-gray-400 hover:bg-red-500 hover:text-white transition-colors"
+          title="Đóng"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12">
+            <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.5" />
+          </svg>
+        </button>
+      </div>
     </div>
-    <div class="no-drag flex">
-      <button id="btn-minimize"
-        class="w-11 h-[34px] flex items-center justify-center text-gray-400 hover:bg-white/[0.08] hover:text-white transition-colors"
-        title="Thu nhỏ">
-        <svg width="12" height="12" viewBox="0 0 12 12">
-          <rect y="5" width="12" height="2" fill="currentColor" />
-        </svg>
-      </button>
-      <button id="btn-maximize"
-        class="w-11 h-[34px] flex items-center justify-center text-gray-400 hover:bg-white/[0.08] hover:text-white transition-colors"
-        title="Phóng to">
-        <svg width="12" height="12" viewBox="0 0 12 12">
-          <rect x="1" y="1" width="10" height="10" stroke="currentColor" stroke-width="1.5" fill="none" />
-        </svg>
-      </button>
-      <button id="btn-close"
-        class="w-11 h-[34px] flex items-center justify-center text-gray-400 hover:bg-red-500 hover:text-white transition-colors"
-        title="Đóng">
-        <svg width="12" height="12" viewBox="0 0 12 12">
-          <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" stroke-width="1.5" />
-        </svg>
-      </button>
-    </div>
-  </div>
 
-  <!-- ═══ APP ═══ -->
-  <div id="app" class="flex-1 overflow-hidden">
-
-    <!-- ── DASHBOARD PAGE ── -->
-    <div id="page-dashboard" class="page hidden h-full">
-      <div class="flex h-full w-full">
-
-        <!-- LEFT: Account Table -->
-        <div class="w-[340px] shrink-0 flex flex-col bg-surface border-r border-white/[0.06]">
-          <div class="flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
-            <span id="account-count" class="text-xs font-semibold text-gray-400">Danh sách tài khoản</span>
-          </div>
-          <!-- Search Bar -->
-          <div class="px-3 py-2 border-b border-white/[0.06]">
-            <div class="relative">
-              <input type="text" id="search-account" placeholder="Tìm kiếm tài khoản..."
-                class="w-full px-3 py-1.5 pl-8 bg-surface-dark border border-white/10 rounded-md text-xs text-gray-200 outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-400/20 transition-all"
-                spellcheck="false" autocomplete="off" />
-              <i data-lucide="search" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500"></i>
+    <!-- ═══ APP ═══ -->
+    <div id="app" class="flex-1 overflow-hidden">
+      <!-- ── DASHBOARD PAGE ── -->
+      <div id="page-dashboard" class="page hidden h-full">
+        <div class="flex h-full w-full">
+          <!-- LEFT: Account Table -->
+          <div class="w-[340px] shrink-0 flex flex-col bg-surface border-r border-white/[0.06]">
+            <div class="flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
+              <span id="account-count" class="text-xs font-semibold text-gray-400"
+                >Danh sách tài khoản</span
+              >
+            </div>
+            <!-- Search Bar -->
+            <div class="px-3 py-2 border-b border-white/[0.06]">
+              <div class="relative">
+                <input
+                  type="text"
+                  id="search-account"
+                  placeholder="Tìm kiếm tài khoản..."
+                  class="w-full px-3 py-1.5 pl-8 bg-surface-dark border border-white/10 rounded-md text-xs text-gray-200 outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-400/20 transition-all"
+                  spellcheck="false"
+                  autocomplete="off"
+                />
+                <i
+                  data-lucide="search"
+                  class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-500"
+                ></i>
+              </div>
+            </div>
+            <!-- Table -->
+            <div class="flex-1 overflow-y-auto scrollbar-thin">
+              <table class="data-table w-full border-collapse">
+                <thead>
+                  <tr>
+                    <th
+                      class="sticky top-0 bg-surface-dark px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500 text-left border-b border-white/[0.06] w-6"
+                    ></th>
+                    <th
+                      class="sticky top-0 bg-surface-dark px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500 text-left border-b border-white/[0.06]"
+                    >
+                      Tài Khoản
+                    </th>
+                    <th
+                      class="sticky top-0 bg-surface-dark px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500 text-left border-b border-white/[0.06] w-14"
+                    >
+                      Server
+                    </th>
+                    <th
+                      class="sticky top-0 bg-surface-dark px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500 text-left border-b border-white/[0.06]"
+                    >
+                      Note
+                    </th>
+                    <th
+                      class="sticky top-0 bg-surface-dark px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500 text-left border-b border-white/[0.06] w-10"
+                    >
+                      Type
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="accounts-tbody">
+                  <tr>
+                    <td colspan="5" class="text-center py-10 text-gray-500 text-sm">Đang tải...</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-          <!-- Table -->
-          <div class="flex-1 overflow-y-auto scrollbar-thin">
-            <table class="data-table w-full border-collapse">
-              <thead>
-                <tr>
-                  <th
-                    class="sticky top-0 bg-surface-dark px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500 text-left border-b border-white/[0.06] w-6">
-                  </th>
-                  <th
-                    class="sticky top-0 bg-surface-dark px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500 text-left border-b border-white/[0.06]">
-                    Tài Khoản</th>
-                  <th
-                    class="sticky top-0 bg-surface-dark px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500 text-left border-b border-white/[0.06] w-14">
-                    Server</th>
-                  <th
-                    class="sticky top-0 bg-surface-dark px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500 text-left border-b border-white/[0.06]">
-                    Note</th>
-                  <th
-                    class="sticky top-0 bg-surface-dark px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-gray-500 text-left border-b border-white/[0.06] w-10">
-                    Type</th>
-                </tr>
-              </thead>
-              <tbody id="accounts-tbody">
-                <tr>
-                  <td colspan="5" class="text-center py-10 text-gray-500 text-sm">Đang tải...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
 
-        <!-- RIGHT: Detail + Actions -->
-        <div class="flex-1 flex flex-col gap-3 p-4 overflow-y-auto scrollbar-thin"
-          style="background: radial-gradient(ellipse at 80% 10%, rgba(74,144,217,0.04) 0%, transparent 50%), #0d1b2a;">
-
-          <!-- Form Fields -->
-          <div class="flex flex-col gap-2.5">
-            <div class="flex items-center gap-2">
-              <label class="w-20 shrink-0 text-right text-sm font-semibold text-blue-200/70">Tài khoản :</label>
-              <input type="text" id="form-username"
-                class="flex-1 px-3 py-1.5 bg-surface-dark border border-white/10 rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 transition-all"
-                spellcheck="false" />
+          <!-- RIGHT: Detail + Actions -->
+          <div
+            class="flex-1 flex flex-col gap-3 p-4 overflow-y-auto scrollbar-thin"
+            style="
+              background:
+                radial-gradient(ellipse at 80% 10%, rgba(74, 144, 217, 0.04) 0%, transparent 50%),
+                #0d1b2a;
+            "
+          >
+            <!-- Form Fields -->
+            <div class="flex flex-col gap-2.5">
+              <div class="flex items-center gap-2">
+                <label class="w-20 shrink-0 text-right text-sm font-semibold text-blue-200/70"
+                  >Tài khoản :</label
+                >
+                <input
+                  type="text"
+                  id="form-username"
+                  class="flex-1 px-3 py-1.5 bg-surface-dark border border-white/10 rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 transition-all"
+                  spellcheck="false"
+                />
+              </div>
+              <div class="flex items-center gap-2">
+                <label class="w-20 shrink-0 text-right text-sm font-semibold text-blue-200/70"
+                  >Mật khẩu :</label
+                >
+                <div class="flex-1 relative">
+                  <input
+                    type="password"
+                    id="form-password"
+                    class="w-full px-3 py-1.5 pr-9 bg-surface-dark border border-white/10 rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 transition-all"
+                    spellcheck="false"
+                  />
+                  <button
+                    type="button"
+                    id="copy-pass"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-200 transition-colors"
+                  >
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <label class="w-20 shrink-0 text-right text-sm font-semibold text-blue-200/70"
+                  >Server :</label
+                >
+                <select
+                  id="form-server"
+                  class="flex-1 px-3 py-1.5 bg-surface-dark border border-white/10 rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 transition-all cursor-pointer"
+                >
+                  <option value="">-- Chọn server --</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-2">
+                <label class="w-20 shrink-0 text-right text-sm font-semibold text-blue-200/70"
+                  >Note :</label
+                >
+                <input
+                  type="text"
+                  id="form-note"
+                  class="flex-1 px-3 py-1.5 bg-surface-dark border border-white/10 rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 transition-all"
+                  spellcheck="false"
+                />
+              </div>
+              <input type="hidden" id="form-id" />
+              <input type="hidden" id="form-accountType" value="0" />
             </div>
-            <div class="flex items-center gap-2">
-              <label class="w-20 shrink-0 text-right text-sm font-semibold text-blue-200/70">Mật khẩu :</label>
-              <div class="flex-1 relative">
-                <input type="password" id="form-password"
-                  class="w-full px-3 py-1.5 pr-9 bg-surface-dark border border-white/10 rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 transition-all"
-                  spellcheck="false" />
-                <button type="button" id="copy-pass"
-                  class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-200 transition-colors">
-                  <i data-lucide="copy" class="w-4 h-4"></i>
+
+            <!-- CRUD Buttons -->
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                id="btn-add"
+                class="flex items-center justify-center gap-1.5 px-3 py-2 bg-surface border border-white/10 hover:border-brand-400/40 hover:bg-surface-card text-sm text-gray-200 rounded-md transition-all"
+              >
+                <i data-lucide="plus-circle" class="w-4 h-4 text-green-400"></i> Thêm (acc chính)
+              </button>
+              <button
+                id="btn-edit"
+                class="flex items-center justify-center gap-1.5 px-3 py-2 bg-surface border border-white/10 hover:border-brand-400/40 hover:bg-surface-card text-sm text-gray-200 rounded-md transition-all"
+              >
+                <i data-lucide="pencil" class="w-4 h-4 text-brand-300"></i> Sửa
+              </button>
+              <button
+                id="btn-add-clone"
+                class="flex items-center justify-center gap-1.5 px-3 py-2 bg-surface border border-white/10 hover:border-brand-400/40 hover:bg-surface-card text-sm text-gray-200 rounded-md transition-all"
+              >
+                <i data-lucide="copy-plus" class="w-4 h-4 text-yellow-400"></i> Thêm (acc clone)
+              </button>
+              <button
+                id="btn-delete"
+                class="flex items-center justify-center gap-1.5 px-3 py-2 bg-surface border border-red-500/20 hover:border-red-500/50 hover:bg-red-500/10 text-sm text-red-300 rounded-md transition-all"
+              >
+                <i data-lucide="trash-2" class="w-4 h-4"></i> Xóa
+              </button>
+            </div>
+
+            <!-- Templates -->
+            <div class="flex flex-col gap-1.5 pt-2 border-t border-white/[0.06]">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-gray-600"
+                >Template</span
+              >
+              <div class="flex items-center gap-2">
+                <select
+                  id="template-select"
+                  class="flex-1 px-3 py-1.5 bg-surface-dark border border-white/10 rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 transition-all cursor-pointer"
+                >
+                  <option value="">-- Chọn template --</option>
+                </select>
+                <button
+                  id="btn-create-template"
+                  title="Tạo Template từ các acc đã tick"
+                  class="flex items-center justify-center px-2.5 py-1.5 bg-surface border border-white/10 hover:border-brand-400/40 hover:bg-surface-card text-gray-300 rounded-md transition-all"
+                >
+                  <i data-lucide="save" class="w-4 h-4"></i>
+                </button>
+                <button
+                  id="btn-rename-template"
+                  title="Đổi tên Template đang chọn"
+                  class="flex items-center justify-center px-2.5 py-1.5 bg-surface border border-white/10 hover:border-brand-400/40 hover:bg-surface-card text-blue-300 rounded-md transition-all hidden"
+                >
+                  <i data-lucide="pencil" class="w-4 h-4"></i>
+                </button>
+                <button
+                  id="btn-delete-template"
+                  title="Xóa Template đang chọn"
+                  class="flex items-center justify-center px-2.5 py-1.5 bg-surface border border-red-500/20 hover:border-red-500/50 hover:bg-red-500/10 text-red-400 rounded-md transition-all hidden"
+                >
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
               </div>
             </div>
-            <div class="flex items-center gap-2">
-              <label class="w-20 shrink-0 text-right text-sm font-semibold text-blue-200/70">Server :</label>
-              <select id="form-server"
-                class="flex-1 px-3 py-1.5 bg-surface-dark border border-white/10 rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 transition-all cursor-pointer">
-                <option value="">-- Chọn server --</option>
-              </select>
-            </div>
-            <div class="flex items-center gap-2">
-              <label class="w-20 shrink-0 text-right text-sm font-semibold text-blue-200/70">Note :</label>
-              <input type="text" id="form-note"
-                class="flex-1 px-3 py-1.5 bg-surface-dark border border-white/10 rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 transition-all"
-                spellcheck="false" />
-            </div>
-            <input type="hidden" id="form-id" />
-            <input type="hidden" id="form-accountType" value="0" />
-          </div>
 
-          <!-- CRUD Buttons -->
-          <div class="grid grid-cols-2 gap-2">
-            <button id="btn-add"
-              class="flex items-center justify-center gap-1.5 px-3 py-2 bg-surface border border-white/10 hover:border-brand-400/40 hover:bg-surface-card text-sm text-gray-200 rounded-md transition-all">
-              <i data-lucide="plus-circle" class="w-4 h-4 text-green-400"></i> Thêm (acc chính)
+            <!-- Login Launcher -->
+            <button
+              id="btn-login-launcher"
+              class="w-full py-2.5 bg-gradient-to-r from-brand-400 to-brand-500 hover:from-brand-300 hover:to-brand-400 text-white font-semibold text-sm rounded-md shadow-lg shadow-brand-400/20 hover:shadow-brand-400/30 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 mt-1"
+            >
+              <i data-lucide="rocket" class="w-4 h-4"></i> Login Launcher
             </button>
-            <button id="btn-edit"
-              class="flex items-center justify-center gap-1.5 px-3 py-2 bg-surface border border-white/10 hover:border-brand-400/40 hover:bg-surface-card text-sm text-gray-200 rounded-md transition-all">
-              <i data-lucide="pencil" class="w-4 h-4 text-brand-300"></i> Sửa
-            </button>
-            <button id="btn-add-clone"
-              class="flex items-center justify-center gap-1.5 px-3 py-2 bg-surface border border-white/10 hover:border-brand-400/40 hover:bg-surface-card text-sm text-gray-200 rounded-md transition-all">
-              <i data-lucide="copy-plus" class="w-4 h-4 text-yellow-400"></i> Thêm (acc clone)
-            </button>
-            <button id="btn-delete"
-              class="flex items-center justify-center gap-1.5 px-3 py-2 bg-surface border border-red-500/20 hover:border-red-500/50 hover:bg-red-500/10 text-sm text-red-300 rounded-md transition-all">
-              <i data-lucide="trash-2" class="w-4 h-4"></i> Xóa
-            </button>
-          </div>
 
-          <!-- Templates -->
-          <div class="flex flex-col gap-1.5 pt-2 border-t border-white/[0.06]">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-600">Template</span>
-            <div class="flex items-center gap-2">
-              <select id="template-select"
-                class="flex-1 px-3 py-1.5 bg-surface-dark border border-white/10 rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20 transition-all cursor-pointer">
-                <option value="">-- Chọn template --</option>
-              </select>
-              <button id="btn-create-template" title="Tạo Template từ các acc đã tick"
-                class="flex items-center justify-center px-2.5 py-1.5 bg-surface border border-white/10 hover:border-brand-400/40 hover:bg-surface-card text-gray-300 rounded-md transition-all">
-                <i data-lucide="save" class="w-4 h-4"></i>
-              </button>
-              <button id="btn-rename-template" title="Đổi tên Template đang chọn"
-                class="flex items-center justify-center px-2.5 py-1.5 bg-surface border border-white/10 hover:border-brand-400/40 hover:bg-surface-card text-blue-300 rounded-md transition-all hidden">
-                <i data-lucide="pencil" class="w-4 h-4"></i>
-              </button>
-              <button id="btn-delete-template" title="Xóa Template đang chọn"
-                class="flex items-center justify-center px-2.5 py-1.5 bg-surface border border-red-500/20 hover:border-red-500/50 hover:bg-red-500/10 text-red-400 rounded-md transition-all hidden">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </div>
-
-          <!-- Login Launcher -->
-          <button id="btn-login-launcher"
-            class="w-full py-2.5 bg-gradient-to-r from-brand-400 to-brand-500 hover:from-brand-300 hover:to-brand-400 text-white font-semibold text-sm rounded-md shadow-lg shadow-brand-400/20 hover:shadow-brand-400/30 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2 mt-1">
-            <i data-lucide="rocket" class="w-4 h-4"></i> Login Launcher
-          </button>
-
-          <!-- Flash
+            <!-- Flash
             <div class="flex flex-col gap-1.5">
               <span class="text-[10px] font-bold uppercase tracking-widest text-gray-600 border-b border-white/[0.06] pb-1">Flash</span>
               <div class="grid grid-cols-3 gap-2">
@@ -203,29 +285,36 @@
               </div>
             </div> -->
 
-          <!-- Debug -->
-          <div class="flex flex-col gap-1.5">
-            <span
-              class="text-[10px] font-bold uppercase tracking-widest text-gray-600 border-b border-white/[0.06] pb-1">Tiện
-              ích API</span>
-            <div class="grid grid-cols-3 gap-2">
-              <button id="btn-code-tuan"
-                class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all">
-                <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Code tuần
-              </button>
-              <button id="btn-reset-an"
-                class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all">
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Reset ấn V15
-              </button>
-              <button id="btn-nhan-all-code"
-                class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all">
-                <i data-lucide="gift" class="w-3.5 h-3.5"></i> Nhận all code
-              </button>
+            <!-- Debug -->
+            <div class="flex flex-col gap-1.5">
+              <span
+                class="text-[10px] font-bold uppercase tracking-widest text-gray-600 border-b border-white/[0.06] pb-1"
+                >Tiện ích API</span
+              >
+              <div class="grid grid-cols-3 gap-2">
+                <button
+                  id="btn-code-tuan"
+                  class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all"
+                >
+                  <i data-lucide="calendar" class="w-3.5 h-3.5"></i> Code tuần
+                </button>
+                <button
+                  id="btn-reset-an"
+                  class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all"
+                >
+                  <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Reset ấn V15
+                </button>
+                <button
+                  id="btn-nhan-all-code"
+                  class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all"
+                >
+                  <i data-lucide="gift" class="w-3.5 h-3.5"></i> Nhận all code
+                </button>
+              </div>
             </div>
-          </div>
 
-          <!-- Import / Export -->
-          <!-- <div class="grid grid-cols-3 gap-2">
+            <!-- Import / Export -->
+            <!-- <div class="grid grid-cols-3 gap-2">
             <button id="btn-import-json"
               class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all">
               <i data-lucide="upload" class="w-3.5 h-3.5"></i> Import JSON
@@ -239,217 +328,368 @@
               <i data-lucide="file-down" class="w-3.5 h-3.5"></i> Export TXT
             </button>
           </div> -->
-          <div class="flex flex-col gap-1.5">
-            <span
-              class="text-[10px] font-bold uppercase tracking-widest text-gray-600 border-b border-white/[0.06] pb-1">Tiện
-              ích</span>
-            <!-- Progress Status -->
-            <div id="auto-progress-container"
-              class="hidden mt-auto p-3 bg-surface-dark/50 border border-brand-400/20 rounded-lg animate-fade-in">
-              <div class="flex flex-col gap-2">
-                <div class="flex justify-between items-center">
-                  <span id="auto-progress-acc" class="text-[10px] font-bold text-brand-300 uppercase">Acc: 0/0</span>
-                  <span id="auto-progress-code" class="text-[10px] font-bold text-blue-300 uppercase">Code: 0/0</span>
-                </div>
-                <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                  <div id="auto-progress-bar" class="h-full bg-brand-400 transition-all duration-300" style="width: 0%">
+            <div class="flex flex-col gap-1.5">
+              <span
+                class="text-[10px] font-bold uppercase tracking-widest text-gray-600 border-b border-white/[0.06] pb-1"
+                >Tiện ích</span
+              >
+              <!-- Progress Status -->
+              <div
+                id="auto-progress-container"
+                class="hidden mt-auto p-3 bg-surface-dark/50 border border-brand-400/20 rounded-lg animate-fade-in"
+              >
+                <div class="flex flex-col gap-2">
+                  <div class="flex justify-between items-center">
+                    <span
+                      id="auto-progress-acc"
+                      class="text-[10px] font-bold text-brand-300 uppercase"
+                      >Acc: 0/0</span
+                    >
+                    <span
+                      id="auto-progress-code"
+                      class="text-[10px] font-bold text-blue-300 uppercase"
+                      >Code: 0/0</span
+                    >
+                  </div>
+                  <div class="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div
+                      id="auto-progress-bar"
+                      class="h-full bg-brand-400 transition-all duration-300"
+                      style="width: 0%"
+                    ></div>
+                  </div>
+                  <div id="auto-progress-msg" class="text-[11px] text-gray-400 truncate">
+                    Sẵn sàng...
                   </div>
                 </div>
-                <div id="auto-progress-msg" class="text-[11px] text-gray-400 truncate">Sẵn sàng...</div>
               </div>
-            </div>
 
-            <!-- Bottom row -->
+              <!-- Bottom row -->
 
+              <div class="grid grid-cols-3 gap-2">
+                <button
+                  id="btn-script-auto"
+                  class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all"
+                >
+                  <i data-lucide="bot" class="w-3.5 h-3.5"></i> Script Auto
+                </button>
+                <button
+                  id="btn-config"
+                  class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all"
+                >
+                  <i data-lucide="settings" class="w-3.5 h-3.5"></i> Config
+                </button>
+                <button
+                  id="btn-log"
+                  class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all"
+                >
+                  <i data-lucide="terminal" class="w-3.5 h-3.5"></i> Xem Log
+                </button>
+              </div>
 
-            <div class="grid grid-cols-3 gap-2">
-              <button id="btn-script-auto"
-                class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all">
-                <i data-lucide="bot" class="w-3.5 h-3.5"></i> Script Auto
+              <button
+                id="btn-setup-first-run"
+                class="w-full flex items-center justify-center gap-1.5 px-2 py-2 bg-surface border border-brand-400/30 hover:bg-brand-400/10 text-xs text-brand-300 font-semibold rounded-md transition-all mb-1 mt-1"
+              >
+                <i data-lucide="shield" class="w-3.5 h-3.5"></i> Setup Auto (Chạy lần đầu)
               </button>
-              <button id="btn-config"
-                class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all">
-                <i data-lucide="settings" class="w-3.5 h-3.5"></i> Config
-              </button>
-              <button id="btn-log"
-                class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all">
-                <i data-lucide="terminal" class="w-3.5 h-3.5"></i> Xem Log
-              </button>
-            </div>
 
-            <button id="btn-setup-first-run"
-              class="w-full flex items-center justify-center gap-1.5 px-2 py-2 bg-surface border border-brand-400/30 hover:bg-brand-400/10 text-xs text-brand-300 font-semibold rounded-md transition-all mb-1 mt-1">
-              <i data-lucide="shield" class="w-3.5 h-3.5"></i> Setup Auto (Chạy lần đầu)
-            </button>
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  id="btn-arrange-launcher"
+                  class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all"
+                >
+                  <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Sắp xếp 50%
+                </button>
+                <button
+                  id="btn-arrange-launcher-100"
+                  class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-brand-300 rounded-md transition-all font-semibold"
+                >
+                  <i data-lucide="grid" class="w-3.5 h-3.5"></i> Sắp xếp 100%
+                </button>
+              </div>
 
-            <div class="grid grid-cols-2 gap-2">
-              <button id="btn-arrange-launcher"
-                class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all">
-                <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Sắp xếp 50%
-              </button>
-              <button id="btn-arrange-launcher-100"
-                class="flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-brand-300 rounded-md transition-all font-semibold">
-                <i data-lucide="grid" class="w-3.5 h-3.5"></i> Sắp xếp 100%
-              </button>
-            </div>
-
-            <!-- <div class="">
+              <!-- <div class="">
               <button id="btn-open-webshop" class="w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-surface border border-white/10 hover:border-brand-400/30 hover:bg-surface-card text-xs text-gray-300 rounded-md transition-all">
                 <i data-lucide="shopping-cart" class="w-3.5 h-3.5"></i> Mở webshop
               </button>
             </div> -->
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Toast container -->
-  <div id="toast-container" class="fixed bottom-4 right-4 flex flex-col gap-1.5 z-[3000]"></div>
-
-  <!-- Config Modal -->
-  <div id="modal-config"
-    class="hidden fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-    <div class="bg-surface border border-white/10 rounded-xl shadow-2xl w-[360px] flex flex-col overflow-hidden">
-      <div class="flex items-center justify-between px-4 py-3 bg-surface-dark border-b border-white/[0.06]">
-        <h3 class="text-sm font-semibold text-gray-200 flex items-center gap-2">
-          <i data-lucide="settings" class="w-4 h-4 text-brand-400"></i>
-          Cấu hình
-        </h3>
-        <button id="btn-close-config" class="text-gray-500 hover:text-white transition-colors">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-      <div class="p-4 flex flex-col gap-4 max-h-[70vh] overflow-y-auto scrollbar-thin">
-        <div class="flex flex-col gap-1.5">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" id="input-reg-check-enable"
-              class="w-4 h-4 rounded-md border border-white/30 bg-white/5 text-brand-500 checked:bg-brand-500 checked:border-brand-500 focus:ring-2 focus:ring-brand-400/40 transition-all duration-200" />
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Kiểm tra & tạo NV (Acc
-              Clone)</span>
-          </label>
-          <span class="text-[10px] text-gray-500">Tự động tạo nhân vật nếu chưa có khi log acc clone (Type = 2).</span>
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Prefix Đăng Ký</label>
-          <input type="text" id="input-reg-prefix"
-            class="w-full px-3 py-2 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/25 transition-all"
-            value="GNLM" spellcheck="false" autocomplete="off" />
-          <span class="text-[10px] text-gray-500">Mặc định: GNLM.</span>
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Độ dài tên tối đa</label>
-          <input type="number" id="input-max-length" min="1"
-            class="w-full px-3 py-2 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/25 transition-all"
-            value="14" />
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Đường dẫn GunnyBrowser.exe</label>
-          <input type="text" id="input-gunny-path"
-            class="w-full px-3 py-2 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/25 transition-all"
-            placeholder="C:/Program Files (x86)/gunnyclient/GunnyBrowser.exe" spellcheck="false" autocomplete="off" />
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">API_NINJA (giải captcha)</label>
-          <input type="text" id="input-api-ninja"
-            class="w-full px-3 py-2 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/25 transition-all"
-            placeholder="Nhập api-ninjas key..." spellcheck="false" autocomplete="off" />
-          <span class="text-[10px] text-gray-500">Cần cho Nhận code / Code tuần (giải captcha).</span>
-        </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Sắp xếp cửa sổ (50%)</label>
-          <div class="grid grid-cols-3 gap-2">
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] text-gray-500">Số cột</span>
-              <input type="number" id="input-arrange-cols" min="1"
-                class="w-full px-2 py-1.5 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 transition-all"
-                value="2" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] text-gray-500">Cách ngang</span>
-              <input type="number" id="input-arrange-gapx"
-                class="w-full px-2 py-1.5 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 transition-all"
-                value="15" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <span class="text-[10px] text-gray-500">Cách dọc</span>
-              <input type="number" id="input-arrange-gapy"
-                class="w-full px-2 py-1.5 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 transition-all"
-                value="15" />
             </div>
           </div>
         </div>
       </div>
-      <div class="px-4 py-3 bg-surface-dark border-t border-white/[0.06] flex justify-end gap-2">
-        <button id="btn-save-config"
-          class="px-4 py-1.5 bg-brand-400 hover:bg-brand-300 text-white text-sm font-medium rounded-md transition-colors">Lưu
-          lại</button>
+    </div>
+
+    <!-- Toast container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 flex flex-col gap-1.5 z-[3000]"></div>
+
+    <!-- Config Modal -->
+    <div
+      id="modal-config"
+      class="hidden fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in"
+    >
+      <div
+        class="bg-surface border border-white/10 rounded-xl shadow-2xl w-[360px] flex flex-col overflow-hidden"
+      >
+        <div
+          class="flex items-center justify-between px-4 py-3 bg-surface-dark border-b border-white/[0.06]"
+        >
+          <h3 class="text-sm font-semibold text-gray-200 flex items-center gap-2">
+            <i data-lucide="settings" class="w-4 h-4 text-brand-400"></i>
+            Cấu hình
+          </h3>
+          <button id="btn-close-config" class="text-gray-500 hover:text-white transition-colors">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col gap-4 max-h-[70vh] overflow-y-auto scrollbar-thin">
+          <div class="flex flex-col gap-1.5">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                id="input-reg-check-enable"
+                class="w-4 h-4 rounded-md border border-white/30 bg-white/5 text-brand-500 checked:bg-brand-500 checked:border-brand-500 focus:ring-2 focus:ring-brand-400/40 transition-all duration-200"
+              />
+              <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-400"
+                >Kiểm tra & tạo NV (Acc Clone)</span
+              >
+            </label>
+            <span class="text-[10px] text-gray-500"
+              >Tự động tạo nhân vật nếu chưa có khi log acc clone (Type = 2).</span
+            >
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] font-semibold uppercase tracking-wider text-gray-400"
+              >Prefix Đăng Ký</label
+            >
+            <input
+              type="text"
+              id="input-reg-prefix"
+              class="w-full px-3 py-2 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/25 transition-all"
+              value="GNLM"
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <span class="text-[10px] text-gray-500">Mặc định: GNLM.</span>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] font-semibold uppercase tracking-wider text-gray-400"
+              >Độ dài tên tối đa</label
+            >
+            <input
+              type="number"
+              id="input-max-length"
+              min="1"
+              class="w-full px-3 py-2 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/25 transition-all"
+              value="14"
+            />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] font-semibold uppercase tracking-wider text-gray-400"
+              >Đường dẫn GunnyBrowser.exe</label
+            >
+            <input
+              type="text"
+              id="input-gunny-path"
+              class="w-full px-3 py-2 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/25 transition-all"
+              placeholder="C:/Program Files (x86)/gunnyclient/GunnyBrowser.exe"
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] font-semibold uppercase tracking-wider text-gray-400"
+              >API_NINJA (giải captcha)</label
+            >
+            <input
+              type="text"
+              id="input-api-ninja"
+              class="w-full px-3 py-2 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/25 transition-all"
+              placeholder="Nhập api-ninjas key..."
+              spellcheck="false"
+              autocomplete="off"
+            />
+            <span class="text-[10px] text-gray-500"
+              >Cần cho Nhận code / Code tuần (giải captcha).</span
+            >
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[11px] font-semibold uppercase tracking-wider text-gray-400"
+              >Sắp xếp cửa sổ (50%)</label
+            >
+            <div class="grid grid-cols-3 gap-2">
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] text-gray-500">Số cột</span>
+                <input
+                  type="number"
+                  id="input-arrange-cols"
+                  min="1"
+                  class="w-full px-2 py-1.5 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 transition-all"
+                  value="2"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] text-gray-500">Cách ngang</span>
+                <input
+                  type="number"
+                  id="input-arrange-gapx"
+                  class="w-full px-2 py-1.5 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 transition-all"
+                  value="15"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] text-gray-500">Cách dọc</span>
+                <input
+                  type="number"
+                  id="input-arrange-gapy"
+                  class="w-full px-2 py-1.5 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 transition-all"
+                  value="15"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="px-4 py-3 bg-surface-dark border-t border-white/[0.06] flex justify-end gap-2">
+          <button
+            id="btn-save-config"
+            class="px-4 py-1.5 bg-brand-400 hover:bg-brand-300 text-white text-sm font-medium rounded-md transition-colors"
+          >
+            Lưu lại
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Prompt Modal -->
-  <div id="modal-prompt"
-    class="hidden fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-    <div class="bg-surface border border-white/10 rounded-xl shadow-2xl w-[320px] flex flex-col overflow-hidden">
-      <div class="flex items-center justify-between px-4 py-3 bg-surface-dark border-b border-white/[0.06]">
-        <h3 id="prompt-title" class="text-sm font-semibold text-gray-200">
-          Nhập thông tin
-        </h3>
-        <button id="btn-close-prompt" class="text-gray-500 hover:text-white transition-colors">
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
-      </div>
-      <div class="p-4 flex flex-col gap-4">
-        <input type="text" id="input-prompt"
-          class="w-full px-3 py-2 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/25 transition-all"
-          autocomplete="off" spellcheck="false" />
-      </div>
-      <div class="px-4 py-3 bg-surface-dark border-t border-white/[0.06] flex justify-end gap-2">
-        <button id="btn-cancel-prompt"
-          class="px-3 py-1.5 bg-surface border border-white/10 hover:bg-surface-card text-gray-300 text-sm font-medium rounded-md transition-colors">Hủy</button>
-        <button id="btn-submit-prompt"
-          class="px-4 py-1.5 bg-brand-400 hover:bg-brand-300 text-white text-sm font-medium rounded-md transition-colors">Xác
-          nhận</button>
+    <!-- Prompt Modal -->
+    <div
+      id="modal-prompt"
+      class="hidden fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in"
+    >
+      <div
+        class="bg-surface border border-white/10 rounded-xl shadow-2xl w-[320px] flex flex-col overflow-hidden"
+      >
+        <div
+          class="flex items-center justify-between px-4 py-3 bg-surface-dark border-b border-white/[0.06]"
+        >
+          <h3 id="prompt-title" class="text-sm font-semibold text-gray-200">Nhập thông tin</h3>
+          <button id="btn-close-prompt" class="text-gray-500 hover:text-white transition-colors">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <div class="p-4 flex flex-col gap-4">
+          <input
+            type="text"
+            id="input-prompt"
+            class="w-full px-3 py-2 bg-surface-dark border border-white/[0.08] rounded-md text-sm text-gray-200 outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-400/25 transition-all"
+            autocomplete="off"
+            spellcheck="false"
+          />
+        </div>
+        <div class="px-4 py-3 bg-surface-dark border-t border-white/[0.06] flex justify-end gap-2">
+          <button
+            id="btn-cancel-prompt"
+            class="px-3 py-1.5 bg-surface border border-white/10 hover:bg-surface-card text-gray-300 text-sm font-medium rounded-md transition-colors"
+          >
+            Hủy
+          </button>
+          <button
+            id="btn-submit-prompt"
+            class="px-4 py-1.5 bg-brand-400 hover:bg-brand-300 text-white text-sm font-medium rounded-md transition-colors"
+          >
+            Xác nhận
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Update Modal -->
-  <div id="modal-update" class="hidden fixed inset-0 z-[4000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-    <div class="bg-surface border border-white/10 rounded-xl shadow-2xl w-[360px] flex flex-col overflow-hidden">
-      <div class="flex items-center justify-between px-4 py-3 bg-surface-dark border-b border-white/[0.06]">
-        <h3 class="text-sm font-semibold text-gray-200 flex items-center gap-2">
-          <i data-lucide="download" class="w-4 h-4 text-brand-400"></i>
-          Đang tải bản cập nhật...
-        </h3>
-      </div>
-      <div class="p-4 flex flex-col gap-3">
-        <div class="flex justify-between items-center text-xs text-gray-400">
-          <span id="update-speed">Tốc độ: 0 MB/s</span>
-          <span id="update-est">Ước tính: Đang tính toán...</span>
+    <!-- Confirm Modal -->
+    <div
+      id="modal-confirm"
+      class="hidden fixed inset-0 z-[2100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in"
+    >
+      <div
+        class="bg-surface border border-white/10 rounded-xl shadow-2xl w-[340px] flex flex-col overflow-hidden"
+      >
+        <div class="h-1.5 w-full bg-gradient-to-r from-amber-400 via-orange-500 to-amber-400"></div>
+        <div class="p-5 flex flex-col items-center text-center gap-3">
+          <div
+            class="w-14 h-14 rounded-full flex items-center justify-center bg-amber-500/15 ring-4 ring-amber-500/10"
+          >
+            <i data-lucide="user-round-check" class="w-7 h-7 text-amber-400"></i>
+          </div>
+          <h3 id="confirm-title" class="text-base font-semibold text-gray-100">Xác nhận</h3>
+          <p
+            id="confirm-message"
+            class="text-sm text-gray-400 leading-relaxed whitespace-pre-line"
+          ></p>
         </div>
-        <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-          <div id="update-progress-bar" class="h-full bg-brand-400 transition-all duration-300" style="width: 0%"></div>
+        <div class="px-4 py-3 bg-surface-dark border-t border-white/[0.06] flex gap-2">
+          <button
+            id="btn-cancel-confirm"
+            class="flex-1 px-3 py-2 bg-surface border border-white/10 hover:bg-surface-card text-gray-300 text-sm font-medium rounded-md transition-colors"
+          >
+            Hủy
+          </button>
+          <button
+            id="btn-ok-confirm"
+            class="flex-1 px-3 py-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white text-sm font-semibold rounded-md transition-all shadow-lg shadow-amber-500/20"
+          >
+            Đồng ý
+          </button>
         </div>
-        <div class="flex justify-between items-center text-[11px] text-gray-500 font-semibold">
-          <span id="update-transferred">0 / 0 MB</span>
-          <span id="update-percent">0%</span>
-        </div>
-      </div>
-      <div class="px-4 py-3 bg-surface-dark border-t border-white/[0.06] flex justify-end gap-2">
-        <button id="btn-install-update" class="hidden px-4 py-1.5 bg-brand-400 hover:bg-brand-300 text-white text-sm font-medium rounded-md transition-colors">Cài đặt & Khởi động lại</button>
       </div>
     </div>
-  </div>
 
-  <script type="module">
-    if (window.location.search.includes('page=log')) {
-      import('/src/log.js');
-    } else {
-      import('/src/renderer.js');
-    }
-  </script>
-</body>
+    <!-- Update Modal -->
+    <div
+      id="modal-update"
+      class="hidden fixed inset-0 z-[4000] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in"
+    >
+      <div
+        class="bg-surface border border-white/10 rounded-xl shadow-2xl w-[360px] flex flex-col overflow-hidden"
+      >
+        <div
+          class="flex items-center justify-between px-4 py-3 bg-surface-dark border-b border-white/[0.06]"
+        >
+          <h3 class="text-sm font-semibold text-gray-200 flex items-center gap-2">
+            <i data-lucide="download" class="w-4 h-4 text-brand-400"></i>
+            Đang tải bản cập nhật...
+          </h3>
+        </div>
+        <div class="p-4 flex flex-col gap-3">
+          <div class="flex justify-between items-center text-xs text-gray-400">
+            <span id="update-speed">Tốc độ: 0 MB/s</span>
+            <span id="update-est">Ước tính: Đang tính toán...</span>
+          </div>
+          <div class="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+            <div
+              id="update-progress-bar"
+              class="h-full bg-brand-400 transition-all duration-300"
+              style="width: 0%"
+            ></div>
+          </div>
+          <div class="flex justify-between items-center text-[11px] text-gray-500 font-semibold">
+            <span id="update-transferred">0 / 0 MB</span>
+            <span id="update-percent">0%</span>
+          </div>
+        </div>
+        <div class="px-4 py-3 bg-surface-dark border-t border-white/[0.06] flex justify-end gap-2">
+          <button
+            id="btn-install-update"
+            class="hidden px-4 py-1.5 bg-brand-400 hover:bg-brand-300 text-white text-sm font-medium rounded-md transition-colors"
+          >
+            Cài đặt & Khởi động lại
+          </button>
+        </div>
+      </div>
+    </div>
 
+    <script type="module">
+      if (window.location.search.includes('page=log')) {
+        import('/src/log.js');
+      } else {
+        import('/src/renderer.js');
+      }
+    </script>
+  </body>
 </html>
