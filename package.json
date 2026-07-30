@@ -30,7 +30,10 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.ico"
+      "icon": "assets/icon.ico",
+      "signtoolOptions": {
+        "sign": "packaging/sign-noop.cjs"
+      }
     },
     "nsis": {
       "oneClick": true,

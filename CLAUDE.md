@@ -57,6 +57,8 @@ Two layers: **build-time** `src/config.js` (API base + webshop URL, from `proces
 - Native/Node-only modules (`koffi`, `electron-log`, `electron-updater`, `electron-squirrel-startup`) are marked **external** in `vite.main.config.mjs` — do not bundle them.
 - `src/resources/clickermann/` (the Clickermann autoclicker + `.cms` scripts) ships as an unpacked `extraResource`. On first run, `main.js` copies it to `app.getPath('userData')/clickermann` and thereafter **merges only new files** (`mergeClickermann`) so user-customized scripts survive updates; `.bat` files are always overwritten from source. Launched elevated (`RunAs`) via PowerShell.
 - ES modules throughout `src/` (`import`/`export`); `main.js` uses `__dirname` (CJS-style, provided by the bundler) and the Vite-injected `MAIN_WINDOW_VITE_*` globals.
+- App icon: `assets/icon.ico` (multi-size, derived from the gunnyclient client icon) via `build.win.icon`; the app window also uses `assets/icon.png` in dev.
+- **No code signing**: there is no certificate, so `build.win.signtoolOptions.sign` points at `packaging/sign-noop.cjs` (a no-op) — the app ships unsigned and users get a Windows SmartScreen prompt. Local caveat: `electron-builder` still downloads `winCodeSign`, whose archive contains macOS symlinks that fail to extract on Windows without Developer Mode/admin. If a local `npm run dist` fails there, pre-extract it once excluding `darwin`: `7za x winCodeSign-2.6.0.7z -o"%LOCALAPPDATA%\electron-builder\Cache\winCodeSign\winCodeSign-2.6.0" -xr!darwin -y`. GitHub's Windows runner is unaffected.
 
 ## Conventions
 
