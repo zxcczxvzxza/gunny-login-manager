@@ -22,6 +22,7 @@ import { startResetMark } from './services/resetMarkService.js';
 import * as koffiService from './koffiService.js';
 import { getLoginToken } from './services/apiService.js';
 import { getAllCode, getWeeklyCode } from './services/autoService.js';
+import { checkAccountOnline } from './services/onlineService.js';
 import { loadSettings, getSettings, saveSettings } from './config/settings.js';
 import config from './config.js';
 import { autoUpdater } from 'electron-updater';
@@ -47,11 +48,11 @@ const originalError = console.error;
 
 function sendLogToWindow(level, args) {
   if (mainWindow && !mainWindow.isDestroyed()) {
-    const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+    const msg = args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
     mainWindow.webContents.send('app:log', `[${level}] ${msg}`);
   }
   if (logWindow && !logWindow.isDestroyed()) {
-    const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ');
+    const msg = args.map((a) => (typeof a === 'object' ? JSON.stringify(a) : String(a))).join(' ');
     logWindow.webContents.send('app:log', `[${level}] ${msg}`);
   }
 }
@@ -111,9 +112,9 @@ const createWindow = () => {
   });
 
   autoUpdater.on('download-progress', (progressObj) => {
-    let log_message = "Download speed: " + progressObj.bytesPerSecond;
+    let log_message = 'Download speed: ' + progressObj.bytesPerSecond;
     log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-    log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+    log_message = log_message + ' (' + progressObj.transferred + '/' + progressObj.total + ')';
     log.info(log_message);
     if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('update:progress', progressObj);
@@ -132,9 +133,7 @@ const createWindow = () => {
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(
-      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
-    );
+    mainWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`));
   }
 };
 
@@ -178,10 +177,9 @@ ipcMain.handle('window:open-log', () => {
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     logWindow.loadURL(`${MAIN_WINDOW_VITE_DEV_SERVER_URL}?page=log`);
   } else {
-    logWindow.loadFile(
-      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
-      { search: 'page=log' }
-    );
+    logWindow.loadFile(path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`), {
+      search: 'page=log',
+    });
   }
 
   logWindow.on('closed', () => {
@@ -239,16 +237,39 @@ ipcMain.handle('templates:delete', async (_event, id) => {
 });
 
 // Game
-ipcMain.handle('game:login', async (_event, username, password, serverId, accountType, prefix, maxLength, checkReg) => {
-  const result = await loginGame(username, password, serverId, accountType, prefix, maxLength, checkReg);
-  if (result.success && result.pid) {
-    activePids.push(result.pid);
+ipcMain.handle(
+  'game:login',
+  async (_event, username, password, serverId, accountType, prefix, maxLength, checkReg) => {
+    const result = await loginGame(
+      username,
+      password,
+      serverId,
+      accountType,
+      prefix,
+      maxLength,
+      checkReg
+    );
+    if (result.success && result.pid) {
+      activePids.push(result.pid);
+    }
+    return result;
   }
-  return result;
-});
+);
 
-ipcMain.handle('game:register-character', async (_event, username, password, serverId, prefix, maxLength) => {
-  return await registerCharacter(username, password, serverId, prefix, maxLength);
+ipcMain.handle(
+  'game:register-character',
+  async (_event, username, password, serverId, prefix, maxLength) => {
+    return await registerCharacter(username, password, serverId, prefix, maxLength);
+  }
+);
+
+// Kiểm tra tài khoản có đang online không (dùng trước khi login launcher đơn lẻ).
+// Cần captcha (API_NINJA) để lấy JWT — nếu chưa cấu hình thì trả unknown thay vì treo.
+ipcMain.handle('game:check-online', async (_event, username, password) => {
+  if (!getSettings().apiNinjaKey && !process.env.API_NINJA) {
+    return { success: false, status: 'unknown', error: 'Chưa cấu hình API_NINJA' };
+  }
+  return await checkAccountOnline({ username, password });
 });
 
 ipcMain.handle('game:rename-window', async (_event, pid, newName) => {
@@ -257,7 +278,7 @@ ipcMain.handle('game:rename-window', async (_event, pid, newName) => {
 
 ipcMain.handle('game:arrange-launchers', async () => {
   // Filter out PIDs that might have been closed (non-existent HWND)
-  const validPids = activePids.filter(pid => {
+  const validPids = activePids.filter((pid) => {
     const rect = koffiService.getWindowRectByPid(pid);
     return rect !== null;
   });
@@ -269,12 +290,17 @@ ipcMain.handle('game:arrange-launchers', async () => {
   // Group PIDs by monitor
   const monitorGroups = {}; // displayId -> [pids]
 
-  validPids.forEach(pid => {
+  validPids.forEach((pid) => {
     const rect = koffiService.getWindowRectByPid(pid);
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
 
-    const display = screen.getDisplayMatching({ x: rect.left, y: rect.top, width: rect.width, height: rect.height });
+    const display = screen.getDisplayMatching({
+      x: rect.left,
+      y: rect.top,
+      width: rect.width,
+      height: rect.height,
+    });
     const dId = display.id;
     if (!monitorGroups[dId]) monitorGroups[dId] = [];
     monitorGroups[dId].push(pid);
@@ -289,8 +315,8 @@ ipcMain.handle('game:arrange-launchers', async () => {
 
     const rectSample = koffiService.getWindowRectByPid(pidsInMonitor[0]);
 
-    const STEP_X = rectSample.width + gapX;   // giãn ngang
-    const STEP_Y = rectSample.height + gapY;  // giãn dọc
+    const STEP_X = rectSample.width + gapX; // giãn ngang
+    const STEP_Y = rectSample.height + gapY; // giãn dọc
 
     const workArea = display.workArea;
 
@@ -298,8 +324,8 @@ ipcMain.handle('game:arrange-launchers', async () => {
       const col = index % cols;
       const row = Math.floor(index / cols);
 
-      const x = workArea.x + startX + (col * STEP_X);
-      const y = workArea.y + startY + (row * STEP_Y);
+      const x = workArea.x + startX + col * STEP_X;
+      const y = workArea.y + startY + row * STEP_Y;
 
       // useSize = false to preserve current dimensions
       koffiService.moveWindowByPid(pid, x, y, 0, 0, false);
@@ -312,13 +338,13 @@ ipcMain.handle('game:arrange-launchers', async () => {
 ipcMain.handle('game:arrange-launchers-100', async (_event, targetPids) => {
   let pidsToArrange = targetPids;
   if (!pidsToArrange || pidsToArrange.length === 0) {
-    pidsToArrange = activePids.filter(pid => {
+    pidsToArrange = activePids.filter((pid) => {
       const rect = koffiService.getWindowRectByPid(pid);
       return rect !== null;
     });
   }
 
-  const validPids = pidsToArrange.filter(pid => {
+  const validPids = pidsToArrange.filter((pid) => {
     const rect = koffiService.getWindowRectByPid(pid);
     return rect !== null;
   });
@@ -409,16 +435,15 @@ ipcMain.handle('auto:setup-first-run', async () => {
     const psCommand = `Start-Process -FilePath '${escapedExe}' -WorkingDirectory '${escapedDir}' -Verb RunAs -ErrorAction Stop`;
 
     try {
-      const child = spawn('powershell.exe', [
-        '-NoProfile',
-        '-ExecutionPolicy', 'Bypass',
-        '-Command',
-        psCommand,
-      ], {
-        detached: false,
-        windowsHide: false,
-        stdio: ['ignore', 'pipe', 'pipe'],
-      });
+      const child = spawn(
+        'powershell.exe',
+        ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', psCommand],
+        {
+          detached: false,
+          windowsHide: false,
+          stdio: ['ignore', 'pipe', 'pipe'],
+        }
+      );
 
       let stderrOutput = '';
       child.stderr.on('data', (chunk) => {
@@ -495,8 +520,8 @@ ipcMain.handle('auto:open-bat-file', async () => {
       const filePath = path.join(clickermannDir, 'data', fileName);
       try {
         const historyData = await fs.readFile(filePath, 'utf8');
-        const lines = historyData.split(/\r?\n/).filter(line => line.trim().length > 0);
-        const newLines = lines.map(line => {
+        const lines = historyData.split(/\r?\n/).filter((line) => line.trim().length > 0);
+        const newLines = lines.map((line) => {
           const baseName = path.basename(line.trim());
           return path.join(clickermannDir, baseName);
         });
@@ -612,7 +637,10 @@ ipcMain.handle('auto:open-weekly-code-txt', async () => {
     exec(`start /wait notepad "${txtPath}"`, async (error) => {
       try {
         const content = await fs.readFile(txtPath, 'utf8');
-        const codes = content.split(/\r?\n/).map(c => c.trim()).filter(c => c.length > 0);
+        const codes = content
+          .split(/\r?\n/)
+          .map((c) => c.trim())
+          .filter((c) => c.length > 0);
         resolve({ success: true, codes });
       } catch (err) {
         resolve({ success: false, msg: err.message });
@@ -649,8 +677,6 @@ ipcMain.handle('auto:get-token-api', async (_event, username, password) => {
   return await getLoginToken(username, password);
 });
 
-
-
 // Mở webshop
 ipcMain.handle('open-webshop', async (event, token) => {
   const ses = session.defaultSession;
@@ -658,7 +684,7 @@ ipcMain.handle('open-webshop', async (event, token) => {
   // url https://sv3.gnddt.com/cua-hang
   await ses.cookies.set({
     url: config.api.base,
-    name: 'Authorization',         // hoặc Token (tùy backend)
+    name: 'Authorization', // hoặc Token (tùy backend)
     value: token,
     path: '/',
   });
@@ -677,7 +703,7 @@ ipcMain.handle('open-webshop', async (event, token) => {
   win.loadURL(config.api.webshop);
 
   return { success: true };
-})
+});
 
 // Reset Mark (Reset Ấn V15)
 let stopResetMarkFlag = false;

@@ -31,7 +31,7 @@ const dom = {
   btnEdit: $('#btn-edit'),
   btnAddClone: $('#btn-add-clone'),
   btnDelete: $('#btn-delete'),
-  
+
   // Templates
   templateSelect: $('#template-select'),
   btnCreateTemplate: $('#btn-create-template'),
@@ -173,10 +173,9 @@ dom.copyPass.addEventListener('click', async () => {
       }, 1500);
     }
 
-    toast('Copy mật khẩu thành công', 'success')
-
+    toast('Copy mật khẩu thành công', 'success');
   } catch (err) {
-    toast('Copy mật khẩu thất bại', 'error')
+    toast('Copy mật khẩu thất bại', 'error');
     console.error('Copy failed:', err);
   }
 });
@@ -273,7 +272,7 @@ async function loadTemplates() {
 
 function renderTemplates() {
   dom.templateSelect.innerHTML = '<option value="">-- Chọn template --</option>';
-  templates.forEach(t => {
+  templates.forEach((t) => {
     const opt = document.createElement('option');
     opt.value = t._id;
     opt.textContent = `${t.name} (${t.accountIds.length} acc)`;
@@ -314,8 +313,14 @@ function asyncPrompt(title, defaultValue = '') {
       inputEl.removeEventListener('keydown', onKeydown);
     };
 
-    const onCancel = () => { cleanup(); resolve(null); };
-    const onSubmit = () => { cleanup(); resolve(inputEl.value); };
+    const onCancel = () => {
+      cleanup();
+      resolve(null);
+    };
+    const onSubmit = () => {
+      cleanup();
+      resolve(inputEl.value);
+    };
     const onKeydown = (e) => {
       if (e.key === 'Enter') onSubmit();
       if (e.key === 'Escape') onCancel();
@@ -334,7 +339,7 @@ dom.templateSelect.addEventListener('change', () => {
     dom.btnDeleteTemplate.classList.add('hidden');
     dom.btnRenameTemplate.classList.add('hidden');
     dom.btnCreateTemplate.classList.remove('hidden');
-    accounts.forEach(a => a.isChecked = false);
+    accounts.forEach((a) => (a.isChecked = false));
     renderAccounts();
     return;
   }
@@ -342,9 +347,9 @@ dom.templateSelect.addEventListener('change', () => {
   dom.btnDeleteTemplate.classList.remove('hidden');
   dom.btnRenameTemplate.classList.remove('hidden');
   dom.btnCreateTemplate.classList.add('hidden');
-  const t = templates.find(x => x._id === selectedId);
+  const t = templates.find((x) => x._id === selectedId);
   if (t) {
-    accounts.forEach(a => {
+    accounts.forEach((a) => {
       a.isChecked = t.accountIds.includes(a._id);
     });
     renderAccounts();
@@ -352,25 +357,25 @@ dom.templateSelect.addEventListener('change', () => {
 });
 
 dom.btnCreateTemplate.addEventListener('click', async () => {
-  const checkedAccounts = accounts.filter(acc => acc.isChecked);
+  const checkedAccounts = accounts.filter((acc) => acc.isChecked);
 
   if (checkedAccounts.length === 0) {
     return toast('Vui lòng tick chọn ít nhất 1 account để tạo template.', 'warning');
   }
 
   const name = await asyncPrompt(`Nhập tên template (${checkedAccounts.length} acc):`);
-  
+
   if (!name || !name.trim()) return;
 
   const data = {
     name: name.trim(),
-    accountIds: checkedAccounts.map(a => a._id)
+    accountIds: checkedAccounts.map((a) => a._id),
   };
 
   const result = await api.createTemplate(data);
   if (result.success) {
     toast(`Tạo template "${data.name}" thành công!`, 'success');
-    accounts.forEach(a => a.isChecked = false);
+    accounts.forEach((a) => (a.isChecked = false));
     renderAccounts();
     loadTemplates();
   } else {
@@ -397,7 +402,7 @@ dom.btnRenameTemplate.addEventListener('click', async () => {
   const selectedId = dom.templateSelect.value;
   if (!selectedId) return;
 
-  const t = templates.find(x => x._id === selectedId);
+  const t = templates.find((x) => x._id === selectedId);
   if (!t) return;
 
   const newName = await asyncPrompt(`Nhập tên mới cho template:`, t.name);
@@ -414,7 +419,7 @@ dom.btnRenameTemplate.addEventListener('click', async () => {
 
 function renderAccounts() {
   const query = dom.inputSearchAccount?.value.trim().toLowerCase() || '';
-  const filteredAccounts = accounts.filter(acc => acc.username.toLowerCase().includes(query));
+  const filteredAccounts = accounts.filter((acc) => acc.username.toLowerCase().includes(query));
 
   dom.accountCount.textContent = `Danh sách (${filteredAccounts.length})`;
 
@@ -424,10 +429,9 @@ function renderAccounts() {
   }
 
   dom.accountsTbody.innerHTML = filteredAccounts
-    .map(
-      (acc, idx) => {
-        const i = accounts.indexOf(acc);
-        return `
+    .map((acc, idx) => {
+      const i = accounts.indexOf(acc);
+      return `
     <tr data-index="${i}" class="cursor-pointer transition-colors hover:bg-brand-400/10 ${i === selectedIndex ? 'selected' : ''} ${idx % 2 === 0 ? '' : 'bg-white/[0.02]'}">
       <td class="px-2 py-1 border-b border-white/[0.03] text-center w-6" onclick="event.stopPropagation()">
         <input
@@ -453,8 +457,7 @@ function renderAccounts() {
       <td class="px-2 py-1 border-b border-white/[0.03] text-xs truncate text-gray-400" title="${esc(acc.note || '')}">${esc(acc.note || '')}</td>
       <td class="px-2 py-1 border-b border-white/[0.03] text-xs text-gray-400">${acc.accountType}</td>
     </tr>`;
-      }
-    )
+    })
     .join('');
 }
 
@@ -516,7 +519,9 @@ dom.btnAdd.addEventListener('click', async () => {
   if (!data.username || !data.password) return toast('Nhập tài khoản và mật khẩu.', 'error');
   data.accountType = '1';
   const result = await api.createAccount(data);
-  result.success ? (toast('Đã thêm acc chính.', 'success'), loadAccounts()) : toast(result.error, 'error');
+  result.success
+    ? (toast('Đã thêm acc chính.', 'success'), loadAccounts())
+    : toast(result.error, 'error');
 });
 
 dom.btnAddClone.addEventListener('click', async () => {
@@ -524,14 +529,18 @@ dom.btnAddClone.addEventListener('click', async () => {
   if (!data.username || !data.password) return toast('Nhập tài khoản và mật khẩu.', 'error');
   data.accountType = '0';
   const result = await api.createAccount(data);
-  result.success ? (toast('Đã thêm acc clone.', 'success'), loadAccounts()) : toast(result.error, 'error');
+  result.success
+    ? (toast('Đã thêm acc clone.', 'success'), loadAccounts())
+    : toast(result.error, 'error');
 });
 
 dom.btnEdit.addEventListener('click', async () => {
   const id = dom.formId.value;
   if (!id) return toast('Chọn tài khoản để sửa.', 'error');
   const result = await api.updateAccount(id, getFormData());
-  result.success ? (toast('Đã cập nhật.', 'success'), loadAccounts()) : toast(result.error, 'error');
+  result.success
+    ? (toast('Đã cập nhật.', 'success'), loadAccounts())
+    : toast(result.error, 'error');
 });
 
 dom.btnDelete.addEventListener('click', async () => {
@@ -544,7 +553,7 @@ dom.btnDelete.addEventListener('click', async () => {
 
 // ── Login Launcher ─────────────────────────────────────────────
 dom.btnLoginLauncher.addEventListener('click', async () => {
-  const checkedAccounts = accounts.filter(acc => acc.isChecked);
+  const checkedAccounts = accounts.filter((acc) => acc.isChecked);
 
   if (checkedAccounts.length > 0) {
     toast(`Đang login ${checkedAccounts.length} account...`, 'info');
@@ -557,7 +566,15 @@ dom.btnLoginLauncher.addEventListener('click', async () => {
         continue;
       }
       try {
-        const result = await api.loginGame(acc.username, acc.password, acc.server, acc.accountType, settings.regPrefix, settings.defaultMaxLength, settings.regCheckEnable);
+        const result = await api.loginGame(
+          acc.username,
+          acc.password,
+          acc.server,
+          acc.accountType,
+          settings.regPrefix,
+          settings.defaultMaxLength,
+          settings.regCheckEnable
+        );
         if (result.success) {
           const sName = getServerName(acc.server);
           const hwidSuffix = result.pid ? ` - ${result.pid}` : '';
@@ -580,7 +597,7 @@ dom.btnLoginLauncher.addEventListener('click', async () => {
     }
 
     // Reset ticks
-    accounts.forEach(a => a.isChecked = false);
+    accounts.forEach((a) => (a.isChecked = false));
     renderAccounts();
     return;
   }
@@ -590,9 +607,39 @@ dom.btnLoginLauncher.addEventListener('click', async () => {
     return toast('Vui lòng chọn tài khoản và server hợp lệ.', 'error');
   }
 
+  // Kiểm tra online trước khi mở launcher (chỉ áp dụng login đơn lẻ).
+  // Nếu đang online -> hỏi xác nhận: Cancel = bỏ qua, OK = vẫn login.
+  // Nếu không kiểm tra được (lỗi/chưa cấu hình captcha) thì vẫn cho login bình thường.
+  dom.btnLoginLauncher.disabled = true;
+  toast('Đang kiểm tra trạng thái online...', 'info');
+  let onlineRes;
+  try {
+    onlineRes = await api.checkAccountOnline(data.username, data.password);
+  } catch {
+    onlineRes = { status: 'unknown' };
+  }
+  dom.btnLoginLauncher.disabled = false;
+
+  if (onlineRes?.status === 'online') {
+    const proceed = confirm(
+      `Tài khoản "${data.username}" đang có người online.\nVẫn muốn đăng nhập không?`
+    );
+    if (!proceed) {
+      return toast('Đã bỏ qua (tài khoản đang online).', 'info');
+    }
+  }
+
   toast('Đang mở Launcher...', 'info');
   try {
-    const result = await api.loginGame(data.username, data.password, data.server, data.accountType || 2, settings.regPrefix, settings.defaultMaxLength, settings.regCheckEnable);
+    const result = await api.loginGame(
+      data.username,
+      data.password,
+      data.server,
+      data.accountType || 2,
+      settings.regPrefix,
+      settings.defaultMaxLength,
+      settings.regCheckEnable
+    );
     if (result.success) {
       toast('Đã mở Game Launcher.', 'success');
       const sName = getServerName(data.server);
@@ -680,10 +727,14 @@ dom.btnLog.addEventListener('click', async () => {
 // ── Placeholder buttons ────────────────────────────────────────
 
 const placeholderIds = [
-  'btn-flash-login', 'btn-sort', 'btn-kill-all',
+  'btn-flash-login',
+  'btn-sort',
+  'btn-kill-all',
 
-  'btn-clipboard', 
-  'btn-import-json', 'btn-export-json', 'btn-export-txt'
+  'btn-clipboard',
+  'btn-import-json',
+  'btn-export-json',
+  'btn-export-txt',
 ];
 placeholderIds.forEach((id) => {
   const el = document.getElementById(id);
@@ -692,7 +743,12 @@ placeholderIds.forEach((id) => {
 
 // ── Keyboard navigation ───────────────────────────────────────
 document.addEventListener('keydown', (e) => {
-  if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA' || document.activeElement?.tagName === 'SELECT') return;
+  if (
+    document.activeElement?.tagName === 'INPUT' ||
+    document.activeElement?.tagName === 'TEXTAREA' ||
+    document.activeElement?.tagName === 'SELECT'
+  )
+    return;
   if (e.key === 'ArrowDown' && accounts.length > 0) {
     e.preventDefault();
     selectAccount(selectedIndex < accounts.length - 1 ? selectedIndex + 1 : 0);
@@ -840,7 +896,7 @@ dom.btnResetAn.addEventListener('click', async () => {
     return;
   }
 
-  const checkedAccounts = accounts.filter(acc => acc.isChecked);
+  const checkedAccounts = accounts.filter((acc) => acc.isChecked);
   if (checkedAccounts.length === 0) {
     return toast('Vui lòng chọn ít nhất 1 tài khoản để reset ấn.', 'warning');
   }
@@ -860,7 +916,7 @@ dom.btnResetAn.addEventListener('click', async () => {
   try {
     const res = await api.resetMark(checkedAccounts);
     if (!res.success) {
-        toast(`Lỗi: ${res.error}`, 'error');
+      toast(`Lỗi: ${res.error}`, 'error');
     }
   } catch (err) {
     toast('Lỗi khi chạy reset ấn.', 'error');
@@ -925,7 +981,7 @@ if (api.onUpdateAvailable) {
 
   api.onUpdateProgress((progressObj) => {
     if (!modalUpdate) return;
-    
+
     const speedMB = (progressObj.bytesPerSecond / (1024 * 1024)).toFixed(2);
     const transferredMB = (progressObj.transferred / (1024 * 1024)).toFixed(2);
     const totalMB = (progressObj.total / (1024 * 1024)).toFixed(2);
@@ -951,13 +1007,13 @@ if (api.onUpdateAvailable) {
 
   api.onUpdateDownloaded((info) => {
     if (!modalUpdate) return;
-    
+
     updateSpeed.textContent = 'Hoàn tất tải xuống';
     updateEst.textContent = '';
     updateProgressBar.style.width = '100%';
     updateProgressBar.classList.replace('bg-brand-400', 'bg-green-500');
     updatePercent.textContent = '100%';
-    
+
     if (btnInstallUpdate) {
       btnInstallUpdate.classList.remove('hidden');
     }

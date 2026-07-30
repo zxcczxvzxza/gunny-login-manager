@@ -24,11 +24,24 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteTemplate: (id) => ipcRenderer.invoke('templates:delete', id),
 
   // Game
-  loginGame: (username, password, serverId, accountType, prefix, maxLength, checkReg) => ipcRenderer.invoke('game:login', username, password, serverId, accountType, prefix, maxLength, checkReg),
+  loginGame: (username, password, serverId, accountType, prefix, maxLength, checkReg) =>
+    ipcRenderer.invoke(
+      'game:login',
+      username,
+      password,
+      serverId,
+      accountType,
+      prefix,
+      maxLength,
+      checkReg
+    ),
   renameWindow: (pid, newName) => ipcRenderer.invoke('game:rename-window', pid, newName),
   arrangeLaunchers: () => ipcRenderer.invoke('game:arrange-launchers'),
   arrangeLaunchers100: (pids) => ipcRenderer.invoke('game:arrange-launchers-100', pids),
-  registerCharacter: (username, password, serverId, prefix, maxLength) => ipcRenderer.invoke('game:register-character', username, password, serverId, prefix, maxLength),
+  registerCharacter: (username, password, serverId, prefix, maxLength) =>
+    ipcRenderer.invoke('game:register-character', username, password, serverId, prefix, maxLength),
+  checkAccountOnline: (username, password) =>
+    ipcRenderer.invoke('game:check-online', username, password),
 
   // Auto
   // get token api -- getLoginToken api service
@@ -40,7 +53,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openWeeklyCodeTxt: () => ipcRenderer.invoke('auto:open-weekly-code-txt'),
   getWeeklyCode: (codes) => ipcRenderer.invoke('auto:get-weekly-code', codes),
   stopGetWeeklyCode: () => ipcRenderer.invoke('auto:stop-weekly-code'),
-  
+
   // Reset Mark
   resetMark: (accounts) => ipcRenderer.invoke('game:reset-mark', accounts),
   stopResetMark: () => ipcRenderer.invoke('game:stop-reset-mark'),
@@ -52,8 +65,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openWebshop: (token) => ipcRenderer.invoke('open-webshop', token),
 
   // Auto Update
-  onUpdateAvailable: (callback) => ipcRenderer.on('update:available', (_event, info) => callback(info)),
-  onUpdateProgress: (callback) => ipcRenderer.on('update:progress', (_event, progressObj) => callback(progressObj)),
-  onUpdateDownloaded: (callback) => ipcRenderer.on('update:downloaded', (_event, info) => callback(info)),
+  onUpdateAvailable: (callback) =>
+    ipcRenderer.on('update:available', (_event, info) => callback(info)),
+  onUpdateProgress: (callback) =>
+    ipcRenderer.on('update:progress', (_event, progressObj) => callback(progressObj)),
+  onUpdateDownloaded: (callback) =>
+    ipcRenderer.on('update:downloaded', (_event, info) => callback(info)),
   installUpdate: () => ipcRenderer.invoke('update:install'),
 });

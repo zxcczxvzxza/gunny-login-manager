@@ -33,12 +33,12 @@ Rebuild source TienTool (của đồng nghiệp) thành bản cá nhân độc l
 
 | # | Phase | Priority | Depends | Status |
 |---|---|---|---|---|
-| 1 | Repo Foundation & Independence | P1 | — | partial (identity rename done; git reset + repo create pending user gh auth) |
+| 1 | Repo Foundation & Independence | P1 | — | done (identity rename ✓; backup bundle ✓; .git reset + fresh commit ✓; **pushed to github.com/zxcczxvzxza/gunny-login-manager, private, remote clean** ✓) |
 | 2 | Tooling & Quality Gates | P1 | 1 | done |
-| 3 | CI/CD & Branch Protection | P1 | 2 | pending (needs repo from Phase 1) |
+| 3 | CI/CD & Branch Protection | P1 | 2 | done (ci.yml + release.yml pushed; repo made **public** → branch protection on `main` enabled: require PR + `lint`/`test` checks, no force-push/delete. Public also fixes electron-updater auto-update — no baked token needed) |
 | 4 | Env + Strip License/Mongo → Local JSON | P1 | 2 | done |
 | 5 | Settings Layer + Config UI | P2 | 4 | done |
-| 6 | UI/Layout & New Features (TBD) | P3 | 5 | deferred |
+| 6 | UI/Layout & New Features | P3 | 5 | in progress (feat #1: online-check trước khi Login Launcher đơn lẻ — `onlineService.js` + `game:check-online`, TDD 5 tests) |
 
 **Execution note (session 2, 2026-07-27):** User chose "local code first, git last". Ran P2 → P4 → P5 (all TDD, 25 tests green, lint+build clean, app boot-verified). Migration exported 71 accounts + 2 templates (key `1`) → `%APPDATA%/Gunny Login Manager/`. Remaining: **P1 git reset + repo create + P3 CI/branch-protection** — external, need user `gh auth login` as `zxcczxvzxza`. Owner confirmed `zxcczxvzxza`. ⚠️ Leaked PAT in old `.git/config` — user to revoke.
 

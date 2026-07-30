@@ -41,6 +41,7 @@ Standard Electron 3-process split. All privileged work happens in the main proce
 - `autoService.js` — gift-code (`getAllCode`) and weekly-code (`getWeeklyCode`) redemption loops over all `accountType:1` accounts (read from local store), driven by `onProgress` callbacks (→ `auto:progress` IPC channel) and a `checkStop` predicate for cancellation.
 - `resetMarkService.js` — "reset ấn V15" automation; loops the mark-item reset API per account, with the same progress/stop pattern.
 - `registerService.js` — in-game character auto-registration.
+- `onlineService.js` — checks whether an account's default character is currently online. There is no dedicated status endpoint; it does an oauth login (via `getLoginToken`, costs one captcha) then calls `getMarkItem` and treats the server's `"Nhân vật đang online không thể thực hiện !"` rejection as `online`. Used by the single-account "Login Launcher" path in `renderer.js` to confirm before launching (`game:check-online` IPC). Note the launcher login itself (`loginService`) uses a different, captcha-free `PublicKey` token that cannot query online state.
 
 ### Long-running automation pattern
 
