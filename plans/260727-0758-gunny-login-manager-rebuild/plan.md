@@ -1,6 +1,6 @@
 ---
 title: Gunny Login Manager — Personal Edition Rebuild
-status: pending
+status: done
 mode: tdd
 created: 2026-07-27
 scope: project
@@ -38,7 +38,7 @@ Rebuild source TienTool (của đồng nghiệp) thành bản cá nhân độc l
 | 3 | CI/CD & Branch Protection | P1 | 2 | done (ci.yml + release.yml pushed; repo made **public** → branch protection on `main` enabled: require PR + `lint`/`test` checks, no force-push/delete. Public also fixes electron-updater auto-update — no baked token needed) |
 | 4 | Env + Strip License/Mongo → Local JSON | P1 | 2 | done |
 | 5 | Settings Layer + Config UI | P2 | 4 | done |
-| 6 | UI/Layout & New Features | P3 | 5 | in progress (feat #1: online-check trước khi Login Launcher đơn lẻ — `onlineService.js` + `game:check-online`, TDD 5 tests) |
+| 6 | UI/Layout & New Features | P3 | 5 | done (feat #1 online-check PR #1; polish batch + icon + rebrand PR #2; unsigned installer PR #3; Node pin + CI single-source PR #4) |
 
 **Execution note (session 2, 2026-07-27):** User chose "local code first, git last". Ran P2 → P4 → P5 (all TDD, 25 tests green, lint+build clean, app boot-verified). Migration exported 71 accounts + 2 templates (key `1`) → `%APPDATA%/Gunny Login Manager/`. Remaining: **P1 git reset + repo create + P3 CI/branch-protection** — external, need user `gh auth login` as `zxcczxvzxza`. Owner confirmed `zxcczxvzxza`. ⚠️ Leaked PAT in old `.git/config` — user to revoke.
 
@@ -49,15 +49,15 @@ Phase 4 là phase code lớn nhất; Phase 3 (CI) nên xong trước hoặc song
 
 ## Acceptance criteria (toàn plan)
 
-- [ ] Repo mới trên GitHub cá nhân, .git sạch, không còn PAT nhúng, không remote `pmt1506`.
-- [ ] `npm run lint`, `npm test` chạy được; hook chặn commit khi lint/test fail; commit ép conventional.
-- [ ] Branch protection main: bắt buộc PR + CI xanh, cấm push thẳng.
-- [ ] App khởi động vào thẳng dashboard, KHÔNG còn màn login key.
-- [ ] Accounts/templates đọc/ghi từ `userData/*.json`; không còn dependency `mongodb`/`nodemailer`; không còn `MONGODB_URI`.
-- [ ] Auto (nhận code/code tuần/reset ấn) + login launcher + sắp xếp cửa sổ vẫn chạy đúng.
-- [ ] Script migrate export acc từ Mongo → `accounts.json` chạy được 1 lần (nếu user cần).
-- [ ] Giá trị hardcode (đường dẫn GunnyBrowser, sắp xếp cửa sổ, default server/prefix, retry captcha, API_NINJA) chuyển sang `settings.json` + sửa được qua Config UI.
-- [ ] Build `npm run dist` ra installer với appId/tên/version mới; publish target trỏ repo cá nhân.
+- [x] Repo mới trên GitHub cá nhân, .git sạch, không còn PAT nhúng, không remote `pmt1506`.
+- [x] `npm run lint`, `npm test` chạy được; hook chặn commit khi lint/test fail; commit ép conventional.
+- [x] Branch protection main: bắt buộc PR + CI xanh, cấm push thẳng.
+- [x] App khởi động vào thẳng dashboard, KHÔNG còn màn login key.
+- [x] Accounts/templates đọc/ghi từ `userData/*.json`; không còn dependency `mongodb`/`nodemailer`; không còn `MONGODB_URI`.
+- [x] Auto (nhận code/code tuần/reset ấn) + login launcher + sắp xếp cửa sổ vẫn chạy đúng.
+- [x] Script migrate export acc từ Mongo → `accounts.json` chạy được 1 lần (nếu user cần).
+- [x] Giá trị hardcode (đường dẫn GunnyBrowser, sắp xếp cửa sổ, default server/prefix, retry captcha, API_NINJA) chuyển sang `settings.json` + sửa được qua Config UI.
+- [x] Build `npm run dist` ra installer với appId/tên/version mới; publish target trỏ repo cá nhân.
 
 ## Open questions
 
