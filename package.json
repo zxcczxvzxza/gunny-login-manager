@@ -32,15 +32,14 @@
       "package.json"
     ],
     "win": {
-      "target": "nsis",
+      "target": "portable",
       "icon": "assets/icon.ico",
       "signtoolOptions": {
         "sign": "packaging/sign-noop.cjs"
       }
     },
-    "nsis": {
-      "oneClick": true,
-      "perMachine": false
+    "portable": {
+      "artifactName": "${productName} ${version}.${ext}"
     }
   },
   "private": true,
@@ -49,6 +48,7 @@
     "dev": "concurrently -k \"vite\" \"wait-on http://localhost:5173 && electronmon .\"",
     "build": "vite build -c vite.main.config.mjs && vite build -c vite.preload.config.mjs && vite build -c vite.renderer.config.mjs",
     "dist": "npm run build && electron-builder --publish=always",
+    "dist:local": "npm run build && electron-builder --publish=never",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
