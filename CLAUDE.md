@@ -12,12 +12,13 @@ Gunny Login Manager is a Windows-only Electron desktop app for **personal** acco
 npm run dev      # Vite dev server + electronmon hot reload (concurrently)
 npm run build    # Build main, preload, renderer via 3 separate Vite configs
 npm start        # build + electron . (production-like local run)
-npm run dist     # build + electron-builder --publish=always (release)
+npm run dist     # build + electron-builder --publish=always (CI release on v* tags)
+npm run dist:local # build + electron-builder --publish=never (local personal build, no GitHub)
 npm test         # Vitest (run once); npm run test:watch for watch mode
 npm run lint     # ESLint (flat config); npm run format for Prettier
 ```
 
-Node 20 (`.nvmrc`). Tests: **Vitest** (`*.test.js` beside source; Node env; electron/koffi mocked at the boundary). Tooling: ESLint (flat v9) + Prettier + Husky (pre-commit → lint-staged, commit-msg → commitlint, pre-push → tests); commits must be Conventional. CI runs lint + test on PRs; release builds an NSIS installer on `v*` tags via `electron-updater`.
+Node 20 (`.nvmrc`). Tests: **Vitest** (`*.test.js` beside source; Node env; electron/koffi mocked at the boundary). Tooling: ESLint (flat v9) + Prettier + Husky (pre-commit → lint-staged, commit-msg → commitlint, pre-push → tests); commits must be Conventional. CI runs lint + test on PRs; release builds the app on `v*` tags via `electron-updater`. Build target is **portable** (`win.target: "portable"`) → a single self-contained `.exe` (`dist/Gunny Login Manager <version>.exe`) that runs the app directly with no install; user data still lives in `%APPDATA%/Gunny Login Manager/`. Use `npm run dist:local` for a personal build that skips publishing.
 
 `resetmarkitem.py` is a standalone Python reference script, not part of the app build.
 
