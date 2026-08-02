@@ -11,14 +11,14 @@ Gunny Login Manager is a Windows-only Electron desktop app for **personal** acco
 ```bash
 npm run dev      # Vite dev server + electronmon hot reload (concurrently)
 npm run build    # Compile main, preload, renderer via 3 separate Vite configs (JS only, no exe)
-npm run release  # build + electron-builder --publish=never → portable exe (local personal build)
+npm run release  # build + electron-builder --publish=never → NSIS installer (local personal build)
 npm start        # build + electron . (production-like local run)
 npm run dist     # build + electron-builder --publish=always (CI release on v* tags)
 npm test         # Vitest (run once); npm run test:watch for watch mode
 npm run lint     # ESLint (flat config); npm run format for Prettier
 ```
 
-Node 20 (`.nvmrc`). Tests: **Vitest** (`*.test.js` beside source; Node env; electron/koffi mocked at the boundary). Tooling: ESLint (flat v9) + Prettier + Husky (pre-commit → lint-staged, commit-msg → commitlint, pre-push → tests); commits must be Conventional. CI runs lint + test on PRs; release builds the app on `v*` tags via `electron-updater`. Build target is **portable** (`win.target: "portable"`) → a single self-contained `.exe` (`dist/Gunny Login Manager <version>.exe`) that runs the app directly with no install; user data still lives in `%APPDATA%/Gunny Login Manager/`. `npm run release` produces the portable exe locally without publishing; `npm run dist` is the CI/tag path that also publishes.
+Node 20 (`.nvmrc`). Tests: **Vitest** (`*.test.js` beside source; Node env; electron/koffi mocked at the boundary). Tooling: ESLint (flat v9) + Prettier + Husky (pre-commit → lint-staged, commit-msg → commitlint, pre-push → tests); commits must be Conventional. CI runs lint + test on PRs; release builds the app on `v*` tags via `electron-updater`. Build target is **NSIS** (`win.target: "nsis"`) → a per-user assisted installer (`dist/Gunny Login Manager Setup <version>.exe`; `nsis.oneClick:false`, `perMachine:false`, changeable install dir, Desktop + Start Menu shortcuts) that installs to `%LOCALAPPDATA%/Programs/Gunny Login Manager/` with no admin/UAC; user data lives in `%APPDATA%/Gunny Login Manager/`. Installed once → fast launch (no per-run self-extract). `npm run release` produces the installer locally without publishing; `npm run dist` is the CI/tag path that also publishes.
 
 `resetmarkitem.py` is a standalone Python reference script, not part of the app build.
 

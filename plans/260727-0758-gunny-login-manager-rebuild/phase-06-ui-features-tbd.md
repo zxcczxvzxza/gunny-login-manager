@@ -16,6 +16,7 @@ dependencies: [5]
 - **Polish batch (PR #2):** fix mojibake log (koffi kernel32 `SetConsoleOutputCP(65001)`); modal confirm màu amber/orange; rebrand mọi chỗ "TienTool" → "Gunny Login Manager"; app icon từ gunnyclient (`assets/icon.ico`/`icon.png`); xoá `vercel-webhook/` dead code.
 - **Build config (PR #3):** unsigned installer qua `packaging/sign-noop.cjs` (`win.signtoolOptions.sign`); build ra `Gunny Login Manager Setup 0.1.0.exe` OK, icon nhúng đúng.
 - **Toolchain (PR #4):** pin `.nvmrc` → `20.19.2`; CI/release đọc `node-version-file: .nvmrc`; thêm `engines.node` vào package.json.
+- **Build format chốt (per-user installer):** thử qua portable single-file (self-extract chậm 5-10s/lần mở, không shortcut) rồi quay lại **NSIS installer per-user** (`win.target:"nsis"`, `oneClick:false`, `perMachine:false`, đổi được thư mục cài, shortcut Desktop + Start Menu, không cần admin/UAC). Cài vào `%LOCALAPPDATA%/Programs/Gunny Login Manager/`, mở nhanh vì chỉ giải nén 1 lần lúc cài. `npm run release` ra `dist/Gunny Login Manager Setup 0.1.0.exe`.
 
 ## Requirements
 - Các tính năng mới về sau: chờ user chốt từng mục (input/output + tiêu chí done) → thêm phase con.

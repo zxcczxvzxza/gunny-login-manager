@@ -32,14 +32,20 @@
       "package.json"
     ],
     "win": {
-      "target": "portable",
+      "target": "nsis",
       "icon": "assets/icon.ico",
       "signtoolOptions": {
         "sign": "packaging/sign-noop.cjs"
       }
     },
-    "portable": {
-      "artifactName": "${productName} ${version}.${ext}"
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Gunny Login Manager",
+      "artifactName": "${productName} Setup ${version}.${ext}"
     }
   },
   "private": true,
