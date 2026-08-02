@@ -10,15 +10,15 @@ Gunny Login Manager is a Windows-only Electron desktop app for **personal** acco
 
 ```bash
 npm run dev      # Vite dev server + electronmon hot reload (concurrently)
-npm run build    # Build main, preload, renderer via 3 separate Vite configs
-npm start        # build + electron . (production-like local run)
-npm run dist     # build + electron-builder --publish=always (CI release on v* tags)
-npm run dist:local # build + electron-builder --publish=never (local personal build, no GitHub)
+npm run bundle   # Compile main, preload, renderer via 3 separate Vite configs (JS only, no exe)
+npm run build    # bundle + electron-builder --publish=never → portable exe (local personal build)
+npm start        # bundle + electron . (production-like local run)
+npm run dist     # bundle + electron-builder --publish=always (CI release on v* tags)
 npm test         # Vitest (run once); npm run test:watch for watch mode
 npm run lint     # ESLint (flat config); npm run format for Prettier
 ```
 
-Node 20 (`.nvmrc`). Tests: **Vitest** (`*.test.js` beside source; Node env; electron/koffi mocked at the boundary). Tooling: ESLint (flat v9) + Prettier + Husky (pre-commit → lint-staged, commit-msg → commitlint, pre-push → tests); commits must be Conventional. CI runs lint + test on PRs; release builds the app on `v*` tags via `electron-updater`. Build target is **portable** (`win.target: "portable"`) → a single self-contained `.exe` (`dist/Gunny Login Manager <version>.exe`) that runs the app directly with no install; user data still lives in `%APPDATA%/Gunny Login Manager/`. Use `npm run dist:local` for a personal build that skips publishing.
+Node 20 (`.nvmrc`). Tests: **Vitest** (`*.test.js` beside source; Node env; electron/koffi mocked at the boundary). Tooling: ESLint (flat v9) + Prettier + Husky (pre-commit → lint-staged, commit-msg → commitlint, pre-push → tests); commits must be Conventional. CI runs lint + test on PRs; release builds the app on `v*` tags via `electron-updater`. Build target is **portable** (`win.target: "portable"`) → a single self-contained `.exe` (`dist/Gunny Login Manager <version>.exe`) that runs the app directly with no install; user data still lives in `%APPDATA%/Gunny Login Manager/`. `npm run build` produces the portable exe locally without publishing; `npm run dist` is the CI/tag path that also publishes.
 
 `resetmarkitem.py` is a standalone Python reference script, not part of the app build.
 
@@ -54,7 +54,7 @@ Two layers: **build-time** `src/config.js` (API base + webshop URL, from `proces
 
 ## Build System Notes
 
-- Uses **Vite** (via `@electron-forge/plugin-vite`, though builds run through the `npm run build` script's three explicit config files, not `electron-forge`).
+- Uses **Vite** (via `@electron-forge/plugin-vite`, though builds run through the `npm run bundle` script's three explicit config files, not `electron-forge`).
 - Native/Node-only modules (`koffi`, `electron-log`, `electron-updater`, `electron-squirrel-startup`) are marked **external** in `vite.main.config.mjs` — do not bundle them.
 - `src/resources/clickermann/` (the Clickermann autoclicker + `.cms` scripts) ships as an unpacked `extraResource`. On first run, `main.js` copies it to `app.getPath('userData')/clickermann` and thereafter **merges only new files** (`mergeClickermann`) so user-customized scripts survive updates; `.bat` files are always overwritten from source. Launched elevated (`RunAs`) via PowerShell.
 - ES modules throughout `src/` (`import`/`export`); `main.js` uses `__dirname` (CJS-style, provided by the bundler) and the Vite-injected `MAIN_WINDOW_VITE_*` globals.
