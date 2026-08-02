@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "description": "Personal desktop manager for Gunny 2017 accounts and in-game automation",
   "main": ".vite/build/main.js",
+  "engines": {
+    "node": ">=20 <21"
+  },
   "build": {
     "appId": "com.gunnytool.manager",
     "productName": "Gunny Login Manager",
