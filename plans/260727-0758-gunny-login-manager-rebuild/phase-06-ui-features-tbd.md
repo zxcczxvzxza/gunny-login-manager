@@ -16,6 +16,8 @@ dependencies: [5]
 - **Polish batch (PR #2):** fix mojibake log (koffi kernel32 `SetConsoleOutputCP(65001)`); modal confirm màu amber/orange; rebrand mọi chỗ "TienTool" → "Gunny Login Manager"; app icon từ gunnyclient (`assets/icon.ico`/`icon.png`); xoá `vercel-webhook/` dead code.
 - **Build config (PR #3):** unsigned installer qua `packaging/sign-noop.cjs` (`win.signtoolOptions.sign`); build ra `Gunny Login Manager Setup 0.1.0.exe` OK, icon nhúng đúng.
 - **Toolchain (PR #4):** pin `.nvmrc` → `20.19.2`; CI/release đọc `node-version-file: .nvmrc`; thêm `engines.node` vào package.json.
+- **Feat #2 — Xóa Cache game (PR #11):** `cacheService.clearGameCache()` xoá `%APPDATA%\Macromedia\Flash Player` + `qtshadercache*` trong `%LOCALAPPDATA%\cache` (không đụng cookie/mật khẩu WinINet). Nút "Xóa Cache" ở mục Tiện ích, có confirm. Replicate `DeleteCache` của launcher gốc (game render Flash trong QtWebKit).
+- **Feat #3 — Cập nhật game (PR #11):** `launcherService.runOfficialLauncher()` mở `GunnyClient.exe` (launcher gốc tự check version + tải tài nguyên + tự xin admin). App uỷ quyền thay vì tự viết bộ tải. Thêm setting `gunnyLauncherPath` + field Config. IPC `game:clear-cache`/`game:run-updater`.
 - **Build format chốt (per-user installer):** thử qua portable single-file (self-extract chậm 5-10s/lần mở, không shortcut) rồi quay lại **NSIS installer per-user** (`win.target:"nsis"`, `oneClick:false`, `perMachine:false`, đổi được thư mục cài, shortcut Desktop + Start Menu, không cần admin/UAC). Cài vào `%LOCALAPPDATA%/Programs/Gunny Login Manager/`, mở nhanh vì chỉ giải nén 1 lần lúc cài. `npm run release` ra `dist/Gunny Login Manager Setup 0.1.0.exe`.
 
 ## Requirements
