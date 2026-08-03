@@ -44,6 +44,11 @@ if (started) {
   app.quit();
 }
 
+// Tắt GPU compositing: trên một số driver Windows, cửa sổ frameless bị lỗi
+// không vẽ lại vùng nội dung khi cuộn ngược lên (danh sách nhìn như kẹt ở đáy
+// dù đã cuộn). App này UI nhẹ nên tắt tăng tốc phần cứng không ảnh hưởng hiệu năng.
+app.disableHardwareAcceleration();
+
 let mainWindow = null;
 let logWindow = null;
 const activePids = [];
