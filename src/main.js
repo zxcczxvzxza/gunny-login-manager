@@ -24,6 +24,8 @@ import * as koffiService from './koffiService.js';
 import { getLoginToken } from './services/apiService.js';
 import { getAllCode, getWeeklyCode } from './services/autoService.js';
 import { checkAccountOnline } from './services/onlineService.js';
+import { clearGameCache } from './services/cacheService.js';
+import { runOfficialLauncher } from './services/launcherService.js';
 import { loadSettings, getSettings, saveSettings } from './config/settings.js';
 import config from './config.js';
 import { autoUpdater } from 'electron-updater';
@@ -290,6 +292,19 @@ ipcMain.handle('game:check-online', async (_event, username, password) => {
 ipcMain.handle('game:rename-window', async (_event, pid, newName) => {
   return await koffiService.waitAndRename(pid, newName);
 });
+
+// Xoá cache game (Flash + shader) — như nút "Xóa Cache" của launcher gốc.
+ipcMain.handle('game:clear-cache', async () => {
+  try {
+    return await clearGameCache();
+  } catch (error) {
+    console.error('[Main] game:clear-cache error:', error.message);
+    return { success: false, error: error.message };
+  }
+});
+
+// Mở launcher gốc để kiểm tra phiên bản + cập nhật tài nguyên game.
+ipcMain.handle('game:run-updater', () => runOfficialLauncher());
 
 ipcMain.handle('game:arrange-launchers', async () => {
   // Filter out PIDs that might have been closed (non-existent HWND)

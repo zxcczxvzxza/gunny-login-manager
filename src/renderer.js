@@ -41,6 +41,8 @@ const dom = {
   btnLoginLauncher: $('#btn-login-launcher'),
   btnScriptAuto: $('#btn-script-auto'),
   btnSetupFirstRun: $('#btn-setup-first-run'),
+  btnClearCache: $('#btn-clear-cache'),
+  btnUpdateGame: $('#btn-update-game'),
   toastContainer: $('#toast-container'),
   btnNhanAllCode: $('#btn-nhan-all-code'),
   btnCodeTuan: $('#btn-code-tuan'),
@@ -62,6 +64,7 @@ const dom = {
   inputRegPrefix: $('#input-reg-prefix'),
   inputRegCheckEnable: $('#input-reg-check-enable'),
   inputGunnyPath: $('#input-gunny-path'),
+  inputGunnyLauncherPath: $('#input-gunny-launcher-path'),
   inputApiNinja: $('#input-api-ninja'),
   inputMaxLength: $('#input-max-length'),
   inputArrangeCols: $('#input-arrange-cols'),
@@ -727,6 +730,8 @@ dom.btnConfig.addEventListener('click', () => {
   dom.inputRegPrefix.value = settings.regPrefix ?? 'GNLM';
   if (dom.inputRegCheckEnable) dom.inputRegCheckEnable.checked = settings.regCheckEnable !== false;
   dom.inputGunnyPath.value = settings.gunnyBrowserPath ?? '';
+  if (dom.inputGunnyLauncherPath)
+    dom.inputGunnyLauncherPath.value = settings.gunnyLauncherPath ?? '';
   dom.inputApiNinja.value = settings.apiNinjaKey ?? '';
   dom.inputMaxLength.value = settings.defaultMaxLength ?? 14;
   dom.inputArrangeCols.value = wa.cols ?? 2;
@@ -744,6 +749,9 @@ dom.btnSaveConfig.addEventListener('click', async () => {
     regPrefix: dom.inputRegPrefix.value.trim() || 'GNLM',
     regCheckEnable: dom.inputRegCheckEnable ? dom.inputRegCheckEnable.checked : true,
     gunnyBrowserPath: dom.inputGunnyPath.value.trim() || settings.gunnyBrowserPath,
+    gunnyLauncherPath: dom.inputGunnyLauncherPath
+      ? dom.inputGunnyLauncherPath.value.trim() || settings.gunnyLauncherPath
+      : settings.gunnyLauncherPath,
     apiNinjaKey: dom.inputApiNinja.value.trim(),
     defaultMaxLength: parseInt(dom.inputMaxLength.value, 10) || 14,
     windowArrange: {
@@ -767,6 +775,37 @@ dom.btnSaveConfig.addEventListener('click', async () => {
 // ── Log Window ──────────────────────────────────────────────────
 dom.btnLog.addEventListener('click', async () => {
   await api.openLogWindow();
+});
+
+// ── Xóa Cache game (Flash + shader) ─────────────────────────────
+dom.btnClearCache.addEventListener('click', async () => {
+  const proceed = await asyncConfirm(
+    'Xoá cache game (Flash + shader)?\nNên đóng game trước khi xoá, rồi đăng nhập lại.',
+    { title: 'Xóa Cache', okText: 'Xoá cache', cancelText: 'Hủy' }
+  );
+  if (!proceed) return;
+
+  dom.btnClearCache.disabled = true;
+  try {
+    const res = await api.clearCache();
+    if (res?.success) {
+      const n = res.data?.cleared?.length ?? 0;
+      toast(n > 0 ? `Đã xoá cache game (${n} mục).` : 'Không có cache nào để xoá.', 'success');
+    } else {
+      toast(res?.error || 'Không xoá được cache.', 'error');
+    }
+  } finally {
+    dom.btnClearCache.disabled = false;
+  }
+});
+
+// ── Cập nhật game — mở launcher gốc để nó tự check version + tải ─
+dom.btnUpdateGame.addEventListener('click', async () => {
+  const res = await api.runUpdater();
+  toast(
+    res?.msg || (res?.success ? 'Đã mở launcher.' : 'Không mở được launcher.'),
+    res?.success ? 'success' : 'error'
+  );
 });
 
 // ── Placeholder buttons ────────────────────────────────────────

@@ -42,6 +42,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('game:register-character', username, password, serverId, prefix, maxLength),
   checkAccountOnline: (username, password) =>
     ipcRenderer.invoke('game:check-online', username, password),
+  clearCache: () => ipcRenderer.invoke('game:clear-cache'),
+  runUpdater: () => ipcRenderer.invoke('game:run-updater'),
 
   // Auto
   // get token api -- getLoginToken api service
