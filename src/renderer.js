@@ -64,7 +64,6 @@ const dom = {
   inputRegPrefix: $('#input-reg-prefix'),
   inputRegCheckEnable: $('#input-reg-check-enable'),
   inputGunnyPath: $('#input-gunny-path'),
-  inputGunnyLauncherPath: $('#input-gunny-launcher-path'),
   inputApiNinja: $('#input-api-ninja'),
   inputMaxLength: $('#input-max-length'),
   inputArrangeCols: $('#input-arrange-cols'),
@@ -730,8 +729,6 @@ dom.btnConfig.addEventListener('click', () => {
   dom.inputRegPrefix.value = settings.regPrefix ?? 'GNLM';
   if (dom.inputRegCheckEnable) dom.inputRegCheckEnable.checked = settings.regCheckEnable !== false;
   dom.inputGunnyPath.value = settings.gunnyBrowserPath ?? '';
-  if (dom.inputGunnyLauncherPath)
-    dom.inputGunnyLauncherPath.value = settings.gunnyLauncherPath ?? '';
   dom.inputApiNinja.value = settings.apiNinjaKey ?? '';
   dom.inputMaxLength.value = settings.defaultMaxLength ?? 14;
   dom.inputArrangeCols.value = wa.cols ?? 2;
@@ -749,9 +746,6 @@ dom.btnSaveConfig.addEventListener('click', async () => {
     regPrefix: dom.inputRegPrefix.value.trim() || 'GNLM',
     regCheckEnable: dom.inputRegCheckEnable ? dom.inputRegCheckEnable.checked : true,
     gunnyBrowserPath: dom.inputGunnyPath.value.trim() || settings.gunnyBrowserPath,
-    gunnyLauncherPath: dom.inputGunnyLauncherPath
-      ? dom.inputGunnyLauncherPath.value.trim() || settings.gunnyLauncherPath
-      : settings.gunnyLauncherPath,
     apiNinjaKey: dom.inputApiNinja.value.trim(),
     defaultMaxLength: parseInt(dom.inputMaxLength.value, 10) || 14,
     windowArrange: {
@@ -799,13 +793,47 @@ dom.btnClearCache.addEventListener('click', async () => {
   }
 });
 
-// ── Cập nhật game — mở launcher gốc để nó tự check version + tải ─
+// ── Cập nhật game — tự tải tài nguyên trong app (tiến trình + Dừng) ─
 dom.btnUpdateGame.addEventListener('click', async () => {
-  const res = await api.runUpdater();
-  toast(
-    res?.msg || (res?.success ? 'Đã mở launcher.' : 'Không mở được launcher.'),
-    res?.success ? 'success' : 'error'
-  );
+  if (isUpdateRunning) {
+    const res = await api.stopUpdate();
+    if (res?.success) toast('Đang dừng cập nhật...', 'info');
+    return;
+  }
+
+  isUpdateRunning = true;
+  dom.btnUpdateGame.classList.add('bg-red-500', 'hover:bg-red-400');
+  dom.btnUpdateGame.classList.remove('bg-surface');
+  dom.btnUpdateGame.innerHTML = '<i data-lucide="square" class="w-3.5 h-3.5"></i> Dừng cập nhật';
+  refreshIcons();
+
+  dom.autoProgressContainer.classList.remove('hidden');
+  dom.autoProgressMsg.textContent = 'Đang bắt đầu cập nhật...';
+  dom.autoProgressBar.style.width = '0%';
+
+  try {
+    const res = await api.updateResources();
+    if (res?.success) {
+      const n = res.data?.downloaded ?? 0;
+      toast(n > 0 ? `Đã cập nhật ${n} file game.` : 'Game đã ở bản mới nhất.', 'success');
+    } else {
+      toast(res?.error || 'Cập nhật thất bại.', 'error');
+    }
+  } catch {
+    toast('Lỗi khi cập nhật game.', 'error');
+  } finally {
+    isUpdateRunning = false;
+    dom.btnUpdateGame.classList.remove('bg-red-500', 'hover:bg-red-400');
+    dom.btnUpdateGame.classList.add('bg-surface');
+    dom.btnUpdateGame.innerHTML =
+      '<i data-lucide="cloud-download" class="w-3.5 h-3.5 text-brand-300"></i> Cập nhật game';
+    refreshIcons();
+    setTimeout(() => {
+      if (!isAutoRunning && !isWeeklyAutoRunning && !isUpdateRunning) {
+        dom.autoProgressContainer.classList.add('hidden');
+      }
+    }, 5000);
+  }
 });
 
 // ── Placeholder buttons ────────────────────────────────────────
@@ -846,6 +874,7 @@ document.addEventListener('keydown', (e) => {
 // TAB AUTO
 
 let isAutoRunning = false;
+let isUpdateRunning = false;
 
 // Listen for progress updates from Main
 api.onAutoProgress((data) => {
@@ -918,7 +947,8 @@ dom.btnNhanAllCode.addEventListener('click', async () => {
     refreshIcons();
     toast('Tiến trình automation đã kết thúc.', 'info');
     setTimeout(() => {
-      if (!isAutoRunning && !isWeeklyAutoRunning) dom.autoProgressContainer.classList.add('hidden');
+      if (!isAutoRunning && !isWeeklyAutoRunning && !isUpdateRunning)
+        dom.autoProgressContainer.classList.add('hidden');
     }, 5000);
   }
 });
@@ -965,7 +995,8 @@ dom.btnCodeTuan.addEventListener('click', async () => {
     refreshIcons();
     toast('Tiến trình Code tuần đã kết thúc.', 'info');
     setTimeout(() => {
-      if (!isAutoRunning && !isWeeklyAutoRunning) dom.autoProgressContainer.classList.add('hidden');
+      if (!isAutoRunning && !isWeeklyAutoRunning && !isUpdateRunning)
+        dom.autoProgressContainer.classList.add('hidden');
     }, 5000);
   }
 });
@@ -1012,7 +1043,7 @@ dom.btnResetAn.addEventListener('click', async () => {
     refreshIcons();
     toast('Tiến trình reset ấn đã kết thúc.', 'info');
     setTimeout(() => {
-      if (!isAutoRunning && !isWeeklyAutoRunning && !isResetMarkRunning) {
+      if (!isAutoRunning && !isWeeklyAutoRunning && !isResetMarkRunning && !isUpdateRunning) {
         dom.autoProgressContainer.classList.add('hidden');
       }
     }, 5000);
