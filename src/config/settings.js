@@ -13,7 +13,8 @@ import fsp from 'node:fs/promises';
 
 export const DEFAULT_SETTINGS = {
   gunnyBrowserPath: 'C:/Program Files (x86)/gunnyclient/GunnyBrowser.exe',
-  gunnyLauncherPath: 'C:/Program Files (x86)/gunnyclient/GunnyClient.exe',
+  resourceManifestUrl: 'http://config.gnddt.com/ResourceInfo.xml',
+  resourceBaseUrl: 'http://res.gnddt.com/',
   defaultServerId: '',
   defaultPrefix: 'GNLM',
   defaultMaxLength: 14,

@@ -25,7 +25,7 @@ import { getLoginToken } from './services/apiService.js';
 import { getAllCode, getWeeklyCode } from './services/autoService.js';
 import { checkAccountOnline } from './services/onlineService.js';
 import { clearGameCache } from './services/cacheService.js';
-import { runOfficialLauncher } from './services/launcherService.js';
+import { updateGameResources } from './services/updateService.js';
 import { loadSettings, getSettings, saveSettings } from './config/settings.js';
 import config from './config.js';
 import { autoUpdater } from 'electron-updater';
@@ -303,8 +303,29 @@ ipcMain.handle('game:clear-cache', async () => {
   }
 });
 
-// Mở launcher gốc để kiểm tra phiên bản + cập nhật tài nguyên game.
-ipcMain.handle('game:run-updater', () => runOfficialLauncher());
+// Tự cập nhật tài nguyên game trong app (không mở launcher gốc, không cần admin).
+let stopUpdateFlag = false;
+ipcMain.handle('game:update-resources', async (event) => {
+  stopUpdateFlag = false;
+  try {
+    return await updateGameResources(
+      (progress) => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          event.sender.send('auto:progress', progress);
+        }
+      },
+      () => stopUpdateFlag
+    );
+  } catch (error) {
+    console.error('[Main] game:update-resources error:', error.message);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('game:stop-update', async () => {
+  stopUpdateFlag = true;
+  return { success: true };
+});
 
 ipcMain.handle('game:arrange-launchers', async () => {
   // Filter out PIDs that might have been closed (non-existent HWND)
